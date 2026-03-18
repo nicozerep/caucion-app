@@ -687,8 +687,8 @@ async function checkVencimientos(){
   const banner=document.getElementById('alert-vencimientos');
   if(!hoy_.length&&!prox.length){banner.innerHTML='';return;}
   let html='<div class="alert-banner"><h3>⚠ Vencimientos</h3><ul>';
-  hoy_.forEach(c=>{const n=c.comitentes?.numero||'';const nm=c.comitentes?.nombre||'';const af=c.comitentes?.afi||'';html+=`<li><span>${n} ${nm}${af?' · <em>'+af+'</em>':''} — ${fU(c.monto_usd)} vence <strong>HOY</strong></span><span style="display:flex;gap:6px;"><button class="btn btn-sm btn-warning" onclick="abrirRenovar('${c.id}',${c.monto_usd},'${c.fecha_vencimiento}','${n}')">Renovar</button><button class="btn btn-sm btn-danger" onclick="cerrarCaucion('${c.id}')">Cerrar</button></span></li>`;});
-  prox.forEach(c=>{const n=c.comitentes?.numero||'';const nm=c.comitentes?.nombre||'';const af=c.comitentes?.afi||'';const d=dH(c.fecha_vencimiento);html+=`<li><span>${n} ${nm}${af?' · <em>'+af+'</em>':''} — ${fU(c.monto_usd)} vence en <strong>${d} día${d!==1?'s':''}</strong> (${fF(c.fecha_vencimiento)})</span></li>`;});
+  hoy_.forEach(c=>{const n=c.comitentes?.numero||'';const af=c.comitentes?.afi||'';html+=`<li><span>${n} — ${fU(c.monto_usd)} vence <strong>HOY</strong>${af?' · <em>'+af+'</em>':''}</span><span style="display:flex;gap:6px;"><button class="btn btn-sm btn-warning" onclick="abrirRenovar('${c.id}',${c.monto_usd},'${c.fecha_vencimiento}','${n}')">Renovar</button><button class="btn btn-sm btn-danger" onclick="cerrarCaucion('${c.id}')">Cerrar</button></span></li>`;});
+  prox.forEach(c=>{const n=c.comitentes?.numero||'';const af=c.comitentes?.afi||'';const d=dH(c.fecha_vencimiento);html+=`<li><span>${n} — ${fU(c.monto_usd)} vence en <strong>${d} día${d!==1?'s':''}</strong> (${fF(c.fecha_vencimiento)})${af?' · <em>'+af+'</em>':''}</span></li>`;});
   html+='</ul></div>';
   banner.innerHTML=html;
 }
