@@ -8,9 +8,9 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; color: #1a1a1a; }
 .app { display: flex; height: 100vh; }
-.sidebar { width: 220px; min-width: 220px; background: #ffffff; border-right: 1px solid #e5e5e3; display: flex; flex-direction: column; }
+.sidebar { width: 220px; min-width: 220px; background: #fff; border-right: 1px solid #e5e5e3; display: flex; flex-direction: column; }
 .logo { padding: 20px 16px 14px; border-bottom: 1px solid #e5e5e3; }
-.logo h1 { font-size: 15px; font-weight: 600; color: #1a1a1a; }
+.logo h1 { font-size: 15px; font-weight: 600; }
 .logo span { font-size: 11px; color: #888; }
 .nav { padding: 8px; flex: 1; }
 .nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; color: #666; margin-bottom: 2px; transition: background 0.1s; }
@@ -73,7 +73,6 @@ tr:hover td { background: #fafaf8; }
 </style>
 </head>
 <body>
-
 <div class="app">
   <div class="sidebar">
     <div class="logo">
@@ -99,7 +98,7 @@ tr:hover td { background: #fafaf8; }
         <span class="page-title">Comitentes</span>
         <button class="btn btn-primary" onclick="openModal('nuevo-comitente')">+ Nuevo comitente</button>
       </div>
-      <input class="search-box" placeholder="Buscar por nombre o número..." oninput="filtrarComitentes(this.value)" id="search-comitentes">
+      <input class="search-box" placeholder="Buscar por nombre o número..." oninput="filtrarComitentes(this.value)">
       <div class="card" style="padding:0;">
         <div class="table-wrap">
           <table>
@@ -121,7 +120,7 @@ tr:hover td { background: #fafaf8; }
         </div>
       </div>
       <div class="update-bar">
-        <span id="ultimo-update">Precios no actualizados — presioná "Actualizar precios" para traer los cierres del día anterior.</span>
+        <span id="ultimo-update">Presioná "Actualizar precios" para traer los precios de data912.</span>
       </div>
       <div class="stat-row">
         <div class="stat-card">
@@ -156,7 +155,7 @@ tr:hover td { background: #fafaf8; }
         <span class="page-title">Tabla de aforos</span>
         <button class="btn btn-primary" onclick="openModal('nuevo-aforo')">+ Agregar aforo</button>
       </div>
-      <input class="search-box" placeholder="Buscar ticker..." oninput="filtrarAforos(this.value)" id="search-aforos">
+      <input class="search-box" placeholder="Buscar ticker..." oninput="filtrarAforos(this.value)">
       <div class="card" style="padding:0;">
         <div class="table-wrap">
           <table>
@@ -169,11 +168,11 @@ tr:hover td { background: #fafaf8; }
   </div>
 </div>
 
-<!-- Modal: Nuevo comitente -->
+<!-- Modales -->
 <div class="modal-overlay" id="modal-nuevo-comitente">
   <div class="modal">
     <h2>Nuevo comitente</h2>
-    <div class="form-group"><label>Número de comitente</label><input id="nc-numero" placeholder="ej: 10234"></div>
+    <div class="form-group"><label>Número</label><input id="nc-numero" placeholder="ej: 10234"></div>
     <div class="form-group"><label>Nombre</label><input id="nc-nombre" placeholder="Apellido, Nombre o Razón Social"></div>
     <div id="nc-error" class="error-msg" style="display:none;"></div>
     <div class="modal-actions">
@@ -183,10 +182,9 @@ tr:hover td { background: #fafaf8; }
   </div>
 </div>
 
-<!-- Modal: Nuevo activo -->
 <div class="modal-overlay" id="modal-nuevo-activo">
   <div class="modal">
-    <h2>Agregar activo a cartera</h2>
+    <h2>Agregar activo</h2>
     <div class="form-group"><label>Ticker</label><input id="na-ticker" placeholder="ej: GGAL, AAPL, AL30" oninput="this.value=this.value.toUpperCase()"></div>
     <div class="form-group"><label>Tipo</label>
       <select id="na-tipo">
@@ -206,7 +204,6 @@ tr:hover td { background: #fafaf8; }
   </div>
 </div>
 
-<!-- Modal: Nuevo aforo -->
 <div class="modal-overlay" id="modal-nuevo-aforo">
   <div class="modal">
     <h2>Nuevo aforo</h2>
@@ -220,7 +217,7 @@ tr:hover td { background: #fafaf8; }
         <option value="fci">FCI</option>
       </select>
     </div>
-    <div class="form-group"><label>Porcentaje de aforo (%)</label><input id="af-porcentaje" type="number" min="0" max="100" placeholder="70"></div>
+    <div class="form-group"><label>Porcentaje (%)</label><input id="af-porcentaje" type="number" min="0" max="100" placeholder="70"></div>
     <div id="af-error" class="error-msg" style="display:none;"></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('nuevo-aforo')">Cancelar</button>
@@ -234,8 +231,6 @@ tr:hover td { background: #fafaf8; }
 <script>
 const SUPA_URL = 'https://gfektpqyywvofnvoxdio.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmZWt0cHF5eXd2b2Zudm94ZGlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NDIwMDMsImV4cCI6MjA4OTQxODAwM30.jFL-u7JSDVdUUeKZHLLytrhtgbeugwDO4is9Zb2qNSw';
-const IOL_USER = 'mnicozerep';
-const IOL_PASS = 'Nicozerep0119iol#';
 
 const hdrs = {
   'Content-Type': 'application/json',
@@ -244,35 +239,18 @@ const hdrs = {
   'Prefer': 'return=representation'
 };
 
-async function supaGet(table, params='') {
-  const r = await fetch(`${SUPA_URL}/rest/v1/${table}?${params}`, { headers: hdrs });
-  return r.json();
-}
-async function supaPost(table, body) {
-  const r = await fetch(`${SUPA_URL}/rest/v1/${table}`, { method:'POST', headers: hdrs, body: JSON.stringify(body) });
-  return r.json();
-}
-async function supaPatch(table, id, body) {
-  const r = await fetch(`${SUPA_URL}/rest/v1/${table}?id=eq.${id}`, { method:'PATCH', headers: hdrs, body: JSON.stringify(body) });
-  return r.json();
-}
-async function supaDelete(table, id) {
-  await fetch(`${SUPA_URL}/rest/v1/${table}?id=eq.${id}`, { method:'DELETE', headers: hdrs });
-}
+async function supaGet(t, p='') { return (await fetch(`${SUPA_URL}/rest/v1/${t}?${p}`, { headers: hdrs })).json(); }
+async function supaPost(t, b) { return (await fetch(`${SUPA_URL}/rest/v1/${t}`, { method:'POST', headers: hdrs, body: JSON.stringify(b) })).json(); }
+async function supaPatch(t, id, b) { return (await fetch(`${SUPA_URL}/rest/v1/${t}?id=eq.${id}`, { method:'PATCH', headers: hdrs, body: JSON.stringify(b) })).json(); }
+async function supaDelete(t, id) { await fetch(`${SUPA_URL}/rest/v1/${t}?id=eq.${id}`, { method:'DELETE', headers: hdrs }); }
 
 let currentComitente = null;
-let comitentes = [];
-let cartera = [];
-let aforos = [];
-let aforosAll = [];
+let comitentes = [], cartera = [], aforos = [], aforosAll = [];
 let mepActual = null;
-let iolToken = null;
-let iolTokenExp = null;
 
 function toast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2800);
 }
 
@@ -284,9 +262,7 @@ function showPage(p) {
   document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   document.getElementById('page-' + p).classList.add('active');
-  const navItems = document.querySelectorAll('.nav-item');
-  if (p === 'comitentes' || p === 'cartera') navItems[0].classList.add('active');
-  if (p === 'aforos') navItems[1].classList.add('active');
+  document.querySelectorAll('.nav-item')[p === 'aforos' ? 1 : 0].classList.add('active');
   if (p === 'comitentes') loadComitentes();
   if (p === 'aforos') loadAforos();
 }
@@ -299,107 +275,74 @@ document.querySelectorAll('.modal-overlay').forEach(el => {
 
 function getAforo(ticker, tipo) {
   if (!Array.isArray(aforos)) return 50;
-  const byTicker = aforos.find(a => a.ticker.toUpperCase() === ticker.toUpperCase());
-  if (byTicker) return byTicker.porcentaje;
+  const byT = aforos.find(a => a.ticker.toUpperCase() === ticker.toUpperCase());
+  if (byT) return byT.porcentaje;
   const byTipo = aforos.find(a => a.ticker.toUpperCase() === tipo.toUpperCase());
   if (byTipo) return byTipo.porcentaje;
   return 50;
 }
 
-// ── IOL Auth ────────────────────────────────────────────────────────────────
-async function getIOLToken() {
-  // Reusar token si no expiró
-  if (iolToken && iolTokenExp && Date.now() < iolTokenExp) return iolToken;
-  try {
-    const body = `username=${encodeURIComponent(IOL_USER)}&password=${encodeURIComponent(IOL_PASS)}&grant_type=password`;
-    const r = await fetch('https://api.invertironline.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body
-    });
-    const d = await r.json();
-    if (d.access_token) {
-      iolToken = d.access_token;
-      iolTokenExp = Date.now() + 13 * 60 * 1000; // 13 min (token dura 15)
-      return iolToken;
-    }
-  } catch(e) { console.error('IOL auth error', e); }
-  return null;
-}
-
-// ── IOL precio cierre ────────────────────────────────────────────────────────
-// mercado: bCBA para acciones/bonos/ONs, bCBA para CEDEARs también
-async function fetchPrecioIOL(ticker, tipo) {
-  const token = await getIOLToken();
-  if (!token) return null;
-  // Determinar mercado según tipo
-  const mercado = 'bCBA'; // BYMA - cubre acciones, CEDEARs, bonos, ONs
-  try {
-    const url = `https://api.invertironline.com/api/v2/${mercado}/Titulos/${ticker}/CotizacionDetalle`;
-    const r = await fetch(url, {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    const d = await r.json();
-    // El precio de cierre anterior está en ultimoPrecio o en el historial
-    if (d && d.ultimoPrecio && d.ultimoPrecio > 0) return d.ultimoPrecio;
-    if (d && d.ultimo && d.ultimo > 0) return d.ultimo;
-  } catch(e) {}
-  // Fallback: endpoint de cotización simple
-  try {
-    const url2 = `https://api.invertironline.com/api/v2/Cotizaciones/${mercado}/${ticker}`;
-    const r2 = await fetch(url2, {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    const d2 = await r2.json();
-    if (d2 && d2.ultimoPrecio && d2.ultimoPrecio > 0) return d2.ultimoPrecio;
-    if (d2 && d2.last && d2.last > 0) return d2.last;
-  } catch(e) {}
-  return null;
-}
-
-// ── MEP desde dolarapi ───────────────────────────────────────────────────────
-async function fetchMEP() {
-  try {
-    const r = await fetch('https://dolarapi.com/v1/dolares/bolsa');
-    const d = await r.json();
-    if (d && d.venta) { mepActual = d.venta; return d.venta; }
-  } catch(e) {}
-  try {
-    const r = await fetch('https://api.bluelytics.com.ar/v2/latest');
-    const d = await r.json();
-    if (d && d.blue) { mepActual = d.blue.value_sell; return d.blue.value_sell; }
-  } catch(e) {}
-  return null;
-}
-
-// ── Botón Actualizar precios ─────────────────────────────────────────────────
+// ── data912 ─────────────────────────────────────────────────────────────────
 async function actualizarPrecios() {
   if (!cartera || cartera.length === 0) { toast('No hay activos en cartera'); return; }
   const btn = document.getElementById('btn-actualizar');
-  btn.disabled = true;
-  btn.textContent = 'Actualizando...';
-  document.getElementById('ultimo-update').textContent = 'Conectando con IOL y obteniendo MEP...';
+  btn.disabled = true; btn.textContent = 'Actualizando...';
+  document.getElementById('ultimo-update').textContent = 'Conectando con data912...';
 
-  const [mep, token] = await Promise.all([fetchMEP(), getIOLToken()]);
+  let mep = null, precios = {};
 
-  if (!token) {
-    document.getElementById('ultimo-update').textContent = 'Error: no se pudo conectar con IOL. Verificá usuario/contraseña.';
+  try {
+    // Traer MEP y precios en paralelo
+    const [resMep, resStocks, resCedears, resBonos] = await Promise.all([
+      fetch('https://data912.com/live/mep').then(r => r.json()),
+      fetch('https://data912.com/live/arg_stocks').then(r => r.json()),
+      fetch('https://data912.com/live/cedears').then(r => r.json()).catch(() => []),
+      fetch('https://data912.com/live/bonds').then(r => r.json()).catch(() => [])
+    ]);
+
+    // MEP
+    if (resMep && resMep.c) mep = parseFloat(resMep.c);
+    else if (Array.isArray(resMep) && resMep[0]?.c) mep = parseFloat(resMep[0].c);
+    else if (resMep && resMep.price) mep = parseFloat(resMep.price);
+
+    // Fallback MEP desde dolarapi si data912 no lo devuelve bien
+    if (!mep || mep <= 0) {
+      const dm = await fetch('https://dolarapi.com/v1/dolares/bolsa').then(r => r.json()).catch(() => null);
+      if (dm && dm.venta) mep = dm.venta;
+    }
+
+    // Mapear precios ARS de cada activo por symbol
+    const mapear = (arr) => {
+      if (!Array.isArray(arr)) return;
+      arr.forEach(item => {
+        const sym = (item.symbol || item.ticker || '').toUpperCase();
+        const precio = parseFloat(item.c || item.price || item.ultimo || 0);
+        if (sym && precio > 0) precios[sym] = precio;
+      });
+    };
+    mapear(resStocks);
+    mapear(resCedears);
+    mapear(resBonos);
+
+  } catch(e) {
+    document.getElementById('ultimo-update').textContent = 'Error conectando con data912: ' + e.message;
     btn.disabled = false; btn.textContent = '↻ Actualizar precios';
     return;
   }
-  if (!mep) {
-    document.getElementById('ultimo-update').textContent = 'Error: no se pudo obtener el MEP.';
+
+  if (!mep || mep <= 0) {
+    document.getElementById('ultimo-update').textContent = 'No se pudo obtener el MEP. Intentá de nuevo.';
     btn.disabled = false; btn.textContent = '↻ Actualizar precios';
     return;
   }
 
-  document.getElementById('ultimo-update').textContent = `MEP: $${mep.toFixed(0)} — Trayendo precios de IOL...`;
+  mepActual = mep;
+  document.getElementById('ultimo-update').textContent = `MEP: $${mep.toFixed(0)} — Actualizando precios...`;
 
-  let actualizados = 0;
-  let sinPrecio = [];
+  let actualizados = 0, sinPrecio = [];
 
   for (const activo of cartera) {
-    const precioARS = await fetchPrecioIOL(activo.ticker, activo.tipo);
+    const precioARS = precios[activo.ticker.toUpperCase()];
     if (precioARS && precioARS > 0) {
       const precioUSD = precioARS / mep;
       await supaPatch('cartera', activo.id, { precio_manual: precioUSD, updated_at: new Date().toISOString() });
@@ -411,13 +354,12 @@ async function actualizarPrecios() {
   }
 
   const ahora = new Date().toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' });
-  let msg = `Última actualización: ${ahora} · MEP: $${mep.toFixed(0)} · ${actualizados} de ${cartera.length} activos actualizados`;
-  if (sinPrecio.length > 0) msg += ` · Sin precio: ${sinPrecio.join(', ')} (cargalos a mano)`;
+  let msg = `Actualizado: ${ahora} · MEP: $${mep.toFixed(0)} · ${actualizados} de ${cartera.length} activos`;
+  if (sinPrecio.length) msg += ` · Sin precio: ${sinPrecio.join(', ')} (cargalos a mano)`;
   document.getElementById('ultimo-update').textContent = msg;
 
   renderCartera();
-  btn.disabled = false;
-  btn.textContent = '↻ Actualizar precios';
+  btn.disabled = false; btn.textContent = '↻ Actualizar precios';
   toast(`${actualizados} precios actualizados`);
 }
 
@@ -425,38 +367,26 @@ async function actualizarPrecios() {
 async function loadComitentes() {
   const tbody = document.getElementById('tabla-comitentes');
   tbody.innerHTML = '<tr><td colspan="5" class="empty">Cargando...</td></tr>';
-  [comitentes, aforos] = await Promise.all([
-    supaGet('comitentes', 'order=nombre.asc'),
-    supaGet('aforos')
-  ]);
-  if (!Array.isArray(comitentes) || comitentes.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty">No hay comitentes. Creá el primero.</td></tr>';
-    return;
+  [comitentes, aforos] = await Promise.all([supaGet('comitentes','order=nombre.asc'), supaGet('aforos')]);
+  if (!Array.isArray(comitentes) || !comitentes.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">No hay comitentes. Creá el primero.</td></tr>'; return;
   }
   const carteras = await Promise.all(comitentes.map(c => supaGet('cartera', `comitente_id=eq.${c.id}`)));
-  let rows = '';
-  comitentes.forEach((c, i) => {
+  tbody.innerHTML = comitentes.map((c, i) => {
     const cart = Array.isArray(carteras[i]) ? carteras[i] : [];
-    let garantiaUSD = 0;
-    cart.forEach(a => {
-      const p = a.precio_manual || 0;
-      const aforo = getAforo(a.ticker, a.tipo);
-      garantiaUSD += p * a.cantidad * (aforo / 100);
-    });
-    rows += `<tr>
+    const garantia = cart.reduce((sum, a) => sum + (a.precio_manual||0) * a.cantidad * (getAforo(a.ticker,a.tipo)/100), 0);
+    return `<tr>
       <td style="color:#888;">${c.numero}</td>
       <td><span class="comitente-link" onclick="abrirCartera('${c.id}','${c.nombre.replace(/'/g,"\\'")}','${c.numero}')">${c.nombre}</span></td>
       <td>${cart.length}</td>
-      <td><strong>${fmtUSD(garantiaUSD)}</strong></td>
+      <td><strong>${fmtUSD(garantia)}</strong></td>
       <td><button class="btn btn-sm btn-danger" onclick="eliminarComitente('${c.id}')">Eliminar</button></td>
     </tr>`;
-  });
-  tbody.innerHTML = rows;
+  }).join('');
 }
 
 function filtrarComitentes(q) {
-  const tbody = document.getElementById('tabla-comitentes');
-  tbody.querySelectorAll('tr').forEach(f => {
+  document.querySelectorAll('#tabla-comitentes tr').forEach(f => {
     f.style.display = !q || f.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
   });
 }
@@ -465,22 +395,18 @@ async function crearComitente() {
   const numero = document.getElementById('nc-numero').value.trim();
   const nombre = document.getElementById('nc-nombre').value.trim();
   const err = document.getElementById('nc-error');
-  if (!numero || !nombre) { err.textContent = 'Completá todos los campos'; err.style.display='block'; return; }
-  err.style.display = 'none';
+  if (!numero || !nombre) { err.textContent='Completá todos los campos'; err.style.display='block'; return; }
+  err.style.display='none';
   const res = await supaPost('comitentes', { numero, nombre });
-  if (!Array.isArray(res) || res[0]?.code) { err.textContent = 'Error: número duplicado.'; err.style.display='block'; return; }
+  if (!Array.isArray(res) || res[0]?.code) { err.textContent='Error: número duplicado.'; err.style.display='block'; return; }
   document.getElementById('nc-numero').value = '';
   document.getElementById('nc-nombre').value = '';
-  closeModal('nuevo-comitente');
-  toast('Comitente creado');
-  loadComitentes();
+  closeModal('nuevo-comitente'); toast('Comitente creado'); loadComitentes();
 }
 
 async function eliminarComitente(id) {
   if (!confirm('¿Eliminar este comitente y toda su cartera?')) return;
-  await supaDelete('comitentes', id);
-  toast('Comitente eliminado');
-  loadComitentes();
+  await supaDelete('comitentes', id); toast('Eliminado'); loadComitentes();
 }
 
 async function abrirCartera(id, nombre, numero) {
@@ -501,32 +427,29 @@ async function loadCartera() {
 
 function renderCartera() {
   const tbody = document.getElementById('tabla-cartera');
-  if (!Array.isArray(cartera) || cartera.length === 0) {
+  if (!Array.isArray(cartera) || !cartera.length) {
     tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin activos. Agregá el primero.</td></tr>';
     ['stat-total','stat-garantia','stat-caucion'].forEach(id => document.getElementById(id).textContent = 'U$S 0');
     return;
   }
   let totalValor = 0, totalGarantia = 0;
-  let rows = '';
-  cartera.forEach(a => {
+  tbody.innerHTML = cartera.map(a => {
     const p = a.precio_manual || 0;
     const valor = p * a.cantidad;
     const aforoPct = getAforo(a.ticker, a.tipo);
     const garantia = valor * (aforoPct / 100);
-    totalValor += valor;
-    totalGarantia += garantia;
-    rows += `<tr>
+    totalValor += valor; totalGarantia += garantia;
+    return `<tr>
       <td><strong>${a.ticker}</strong></td>
       <td><span class="badge badge-${a.tipo}">${a.tipo}</span></td>
       <td>${Number(a.cantidad).toLocaleString('es-AR')}</td>
-      <td><input class="precio-input" type="number" value="${p > 0 ? p.toFixed(4) : ''}" placeholder="0.0000" step="0.0001" onchange="actualizarPrecio('${a.id}', this.value)"></td>
+      <td><input class="precio-input" type="number" value="${p>0?p.toFixed(4):''}" placeholder="0.0000" step="0.0001" onchange="actualizarPrecio('${a.id}',this.value)"></td>
       <td>${fmtUSD(valor)}</td>
       <td>${aforoPct}%</td>
       <td><strong>${fmtUSD(garantia)}</strong></td>
       <td><button class="btn btn-sm btn-danger" onclick="eliminarActivo('${a.id}')">×</button></td>
     </tr>`;
-  });
-  tbody.innerHTML = rows;
+  }).join('');
   document.getElementById('stat-total').textContent = fmtUSD(totalValor);
   document.getElementById('stat-garantia').textContent = fmtUSD(totalGarantia);
   document.getElementById('stat-caucion').textContent = fmtUSD(totalGarantia);
@@ -536,9 +459,8 @@ function renderCartera() {
 async function actualizarPrecio(id, precio) {
   const val = parseFloat(precio);
   await supaPatch('cartera', id, { precio_manual: val, updated_at: new Date().toISOString() });
-  cartera = cartera.map(a => a.id === id ? {...a, precio_manual: val} : a);
-  renderCartera();
-  toast('Precio actualizado');
+  cartera = cartera.map(a => a.id===id ? {...a, precio_manual: val} : a);
+  renderCartera(); toast('Precio actualizado');
 }
 
 async function agregarActivo() {
@@ -546,41 +468,35 @@ async function agregarActivo() {
   const tipo = document.getElementById('na-tipo').value;
   const cantidad = parseFloat(document.getElementById('na-cantidad').value);
   const err = document.getElementById('na-error');
-  if (!ticker || !cantidad) { err.textContent = 'Ticker y cantidad son obligatorios'; err.style.display='block'; return; }
-  err.style.display = 'none';
+  if (!ticker || !cantidad) { err.textContent='Ticker y cantidad son obligatorios'; err.style.display='block'; return; }
+  err.style.display='none';
   await supaPost('cartera', { comitente_id: currentComitente.id, ticker, tipo, cantidad, precio_manual: 0 });
   document.getElementById('na-ticker').value = '';
   document.getElementById('na-cantidad').value = '';
-  closeModal('nuevo-activo');
-  toast('Activo agregado — presioná "Actualizar precios" para traer el precio');
-  await loadCartera();
+  closeModal('nuevo-activo'); toast('Activo agregado'); await loadCartera();
 }
 
 async function eliminarActivo(id) {
   if (!confirm('¿Eliminar este activo?')) return;
-  await supaDelete('cartera', id);
-  toast('Activo eliminado');
-  await loadCartera();
+  await supaDelete('cartera', id); toast('Eliminado'); await loadCartera();
 }
 
 async function loadAforos() {
   aforosAll = await supaGet('aforos', 'order=tipo.asc,ticker.asc');
-  aforos = aforosAll;
-  renderAforos(aforosAll);
+  aforos = aforosAll; renderAforos(aforosAll);
 }
 
 function filtrarAforos(q) {
-  if (!q) { renderAforos(aforosAll); return; }
-  renderAforos(aforosAll.filter(a => a.ticker.toLowerCase().includes(q.toLowerCase())));
+  renderAforos(!q ? aforosAll : aforosAll.filter(a => a.ticker.toLowerCase().includes(q.toLowerCase())));
 }
 
 function renderAforos(list) {
   const tbody = document.getElementById('tabla-aforos');
-  if (!Array.isArray(list) || !list.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty">Sin aforos</td></tr>'; return; }
+  if (!Array.isArray(list) || !list.length) { tbody.innerHTML='<tr><td colspan="4" class="empty">Sin aforos</td></tr>'; return; }
   tbody.innerHTML = list.map(a => `<tr>
     <td><strong>${a.ticker}</strong></td>
     <td><span class="badge badge-${a.tipo}">${a.tipo}</span></td>
-    <td><input class="precio-input" type="number" value="${a.porcentaje}" onchange="actualizarAforo('${a.id}', this.value)" style="width:70px;"> %</td>
+    <td><input class="precio-input" type="number" value="${a.porcentaje}" onchange="actualizarAforo('${a.id}',this.value)" style="width:70px;"> %</td>
     <td><button class="btn btn-sm btn-danger" onclick="eliminarAforo('${a.id}')">×</button></td>
   </tr>`).join('');
 }
@@ -590,15 +506,12 @@ async function crearAforo() {
   const tipo = document.getElementById('af-tipo').value;
   const porcentaje = parseFloat(document.getElementById('af-porcentaje').value);
   const err = document.getElementById('af-error');
-  if (!ticker || isNaN(porcentaje)) { err.textContent = 'Completá todos los campos'; err.style.display='block'; return; }
-  err.style.display = 'none';
+  if (!ticker || isNaN(porcentaje)) { err.textContent='Completá todos los campos'; err.style.display='block'; return; }
+  err.style.display='none';
   const res = await supaPost('aforos', { ticker, tipo, porcentaje });
-  if (!Array.isArray(res) || res[0]?.code) { err.textContent = 'Error: ese ticker ya existe.'; err.style.display='block'; return; }
-  document.getElementById('af-ticker').value = '';
-  document.getElementById('af-porcentaje').value = '';
-  closeModal('nuevo-aforo');
-  toast('Aforo creado');
-  loadAforos();
+  if (!Array.isArray(res) || res[0]?.code) { err.textContent='Error: ese ticker ya existe.'; err.style.display='block'; return; }
+  document.getElementById('af-ticker').value=''; document.getElementById('af-porcentaje').value='';
+  closeModal('nuevo-aforo'); toast('Aforo creado'); loadAforos();
 }
 
 async function actualizarAforo(id, pct) {
@@ -608,9 +521,7 @@ async function actualizarAforo(id, pct) {
 
 async function eliminarAforo(id) {
   if (!confirm('¿Eliminar este aforo?')) return;
-  await supaDelete('aforos', id);
-  toast('Aforo eliminado');
-  loadAforos();
+  await supaDelete('aforos', id); toast('Eliminado'); loadAforos();
 }
 
 loadComitentes();
