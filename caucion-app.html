@@ -494,7 +494,7 @@ function aplicarFiltros(){
   const afiSel=document.getElementById('filtro-afi').value;
   const f=comitentesData.filter(({c})=>{
     const mQ=!q||c.nombre.toLowerCase().includes(q)||c.numero.includes(q);
-    const mA=!afiSel||(c.afi||')===afiSel;
+    const mA=!afiSel||(c.afi||'')===afiSel;
     return mQ&&mA;
   });
   renderTablaComitentes(f);
