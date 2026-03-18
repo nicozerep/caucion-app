@@ -84,10 +84,7 @@ tr.sin-precio { background: #fff8f8; }
 .alert-banner { background: #FCEBEB; border: 1px solid #f7c1c1; border-radius: 10px; padding: 14px 18px; margin-bottom: 18px; }
 .alert-banner h3 { font-size: 13px; font-weight: 600; color: #A32D2D; margin-bottom: 8px; }
 .alert-banner ul { list-style: none; }
-.alert-banner li { font-size: 13px; color: #791F1F; padding: 6px 0; border-bottom: 1px solid #f7c1c1; display: grid; grid-template-columns: 60px 1fr auto; align-items: center; gap: 12px; }
-.alert-banner .li-num { font-weight: 600; white-space: nowrap; }
-.alert-banner .li-info { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.alert-banner .li-afi { color: #A32D2D; font-style: italic; white-space: nowrap; font-size: 12px; }
+.alert-banner li { font-size: 13px; color: #791F1F; padding: 6px 0; border-bottom: 1px solid #f7c1c1; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .alert-banner li:last-child { border-bottom: none; }
 .neto-positivo { color: #1a7a4a; font-weight: 600; }
 .neto-negativo { color: #c0392b; font-weight: 600; }
@@ -690,8 +687,8 @@ async function checkVencimientos(){
   const banner=document.getElementById('alert-vencimientos');
   if(!hoy_.length&&!prox.length){banner.innerHTML='';return;}
   let html='<div class="alert-banner"><h3>⚠ Vencimientos</h3><ul>';
-  hoy_.forEach(c=>{const n=c.comitentes?.numero||'';const af=c.comitentes?.afi||'';html+=`<li><span class='li-num'>${n}</span><span class='li-info'>${fU(c.monto_usd)} — vence <strong>HOY</strong></span><span class='li-afi'>${af}</span><span style="display:flex;gap:6px;"><button class="btn btn-sm btn-warning" onclick="abrirRenovar('${c.id}',${c.monto_usd},'${c.fecha_vencimiento}','${n}')">Renovar</button><button class="btn btn-sm btn-danger" onclick="cerrarCaucion('${c.id}')">Cerrar</button></span></li>`;});
-  prox.forEach(c=>{const n=c.comitentes?.numero||'';const af=c.comitentes?.afi||'';const d=dH(c.fecha_vencimiento);html+=`<li><span class='li-num'>${n}</span><span class='li-info'>${fU(c.monto_usd)} — vence en <strong>${d} día${d!==1?'s':''}</strong> (${fF(c.fecha_vencimiento)})</span><span class='li-afi'>${af}</span></li>`;});
+  hoy_.forEach(c=>{const n=c.comitentes?.numero||'';const af=c.comitentes?.afi||'';html+=`<li><span>${n} — ${fU(c.monto_usd)} vence <strong>HOY</strong>${af?' · <em>'+af+'</em>':''}</span><span style="display:flex;gap:6px;"><button class="btn btn-sm btn-warning" onclick="abrirRenovar('${c.id}',${c.monto_usd},'${c.fecha_vencimiento}','${n}')">Renovar</button><button class="btn btn-sm btn-danger" onclick="cerrarCaucion('${c.id}')">Cerrar</button></span></li>`;});
+  prox.forEach(c=>{const n=c.comitentes?.numero||'';const af=c.comitentes?.afi||'';const d=dH(c.fecha_vencimiento);html+=`<li><span>${n} — ${fU(c.monto_usd)} vence en <strong>${d} día${d!==1?'s':''}</strong> (${fF(c.fecha_vencimiento)})${af?' <em>'+af+'</em>':''}</span></li>`;});
   html+='</ul></div>';
   banner.innerHTML=html;
 }
