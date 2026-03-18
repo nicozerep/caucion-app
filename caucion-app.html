@@ -30,8 +30,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .btn-sm { padding: 4px 10px; font-size: 12px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .card { background: #fff; border: 1px solid #e5e5e3; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; }
-.search-box { width: 100%; padding: 9px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; background: #fff; color: #1a1a1a; margin-bottom: 16px; font-family: inherit; outline: none; }
+.filters-row { display: flex; gap: 10px; margin-bottom: 16px; }
+.search-box { flex: 1; padding: 9px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; background: #fff; color: #1a1a1a; font-family: inherit; outline: none; }
 .search-box:focus { border-color: #aaa; }
+.filter-select { padding: 9px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; background: #fff; color: #1a1a1a; font-family: inherit; outline: none; min-width: 180px; cursor: pointer; }
+.filter-select:focus { border-color: #aaa; }
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
 th { text-align: left; padding: 9px 14px; color: #888; font-weight: 500; border-bottom: 1px solid #e5e5e3; font-size: 12px; }
@@ -44,6 +47,7 @@ tr:hover td { background: #fafaf8; }
 .badge-bono { background: #FAEEDA; color: #633806; }
 .badge-on { background: #EEEDFE; color: #3C3489; }
 .badge-fci { background: #FAECE7; color: #712B13; }
+.badge-afi { background: #f0f0ee; color: #555; font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 100; align-items: center; justify-content: center; }
 .modal-overlay.open { display: flex; }
 .modal { background: #fff; border-radius: 12px; padding: 24px; width: 420px; max-width: 95vw; border: 1px solid #ddd; box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
@@ -98,12 +102,17 @@ tr:hover td { background: #fafaf8; }
         <span class="page-title">Comitentes</span>
         <button class="btn btn-primary" onclick="openModal('nuevo-comitente')">+ Nuevo comitente</button>
       </div>
-      <input class="search-box" placeholder="Buscar por nombre o número..." oninput="filtrarComitentes(this.value)">
+      <div class="filters-row">
+        <input class="search-box" placeholder="Buscar por nombre o número..." oninput="aplicarFiltros()">
+        <select class="filter-select" id="filtro-afi" onchange="aplicarFiltros()">
+          <option value="">Todos los AFIs</option>
+        </select>
+      </div>
       <div class="card" style="padding:0;">
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Número</th><th>Nombre</th><th>Activos</th><th>Garantía disponible (USD)</th><th></th></tr></thead>
-            <tbody id="tabla-comitentes"><tr><td colspan="5" class="empty">Cargando...</td></tr></tbody>
+            <thead><tr><th>Número</th><th>Nombre</th><th>AFI</th><th>Activos</th><th>Garantía (USD)</th><th></th></tr></thead>
+            <tbody id="tabla-comitentes"><tr><td colspan="6" class="empty">Cargando...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -155,7 +164,7 @@ tr:hover td { background: #fafaf8; }
         <span class="page-title">Tabla de aforos</span>
         <button class="btn btn-primary" onclick="openModal('nuevo-aforo')">+ Agregar aforo</button>
       </div>
-      <input class="search-box" placeholder="Buscar ticker..." oninput="filtrarAforos(this.value)">
+      <input class="search-box" placeholder="Buscar ticker..." oninput="filtrarAforos(this.value)" style="margin-bottom:16px;">
       <div class="card" style="padding:0;">
         <div class="table-wrap">
           <table>
@@ -168,12 +177,13 @@ tr:hover td { background: #fafaf8; }
   </div>
 </div>
 
-<!-- Modales -->
+<!-- Modal: Nuevo comitente -->
 <div class="modal-overlay" id="modal-nuevo-comitente">
   <div class="modal">
     <h2>Nuevo comitente</h2>
     <div class="form-group"><label>Número</label><input id="nc-numero" placeholder="ej: 10234"></div>
     <div class="form-group"><label>Nombre</label><input id="nc-nombre" placeholder="Apellido, Nombre o Razón Social"></div>
+    <div class="form-group"><label>AFI (asesor externo)</label><input id="nc-afi" placeholder="Nombre del asesor"></div>
     <div id="nc-error" class="error-msg" style="display:none;"></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('nuevo-comitente')">Cancelar</button>
@@ -182,6 +192,23 @@ tr:hover td { background: #fafaf8; }
   </div>
 </div>
 
+<!-- Modal: Editar comitente -->
+<div class="modal-overlay" id="modal-editar-comitente">
+  <div class="modal">
+    <h2>Editar comitente</h2>
+    <input type="hidden" id="ec-id">
+    <div class="form-group"><label>Número</label><input id="ec-numero" placeholder="ej: 10234"></div>
+    <div class="form-group"><label>Nombre</label><input id="ec-nombre" placeholder="Apellido, Nombre o Razón Social"></div>
+    <div class="form-group"><label>AFI (asesor externo)</label><input id="ec-afi" placeholder="Nombre del asesor"></div>
+    <div id="ec-error" class="error-msg" style="display:none;"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('editar-comitente')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarEdicionComitente()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Nuevo activo -->
 <div class="modal-overlay" id="modal-nuevo-activo">
   <div class="modal">
     <h2>Agregar activo</h2>
@@ -204,6 +231,7 @@ tr:hover td { background: #fafaf8; }
   </div>
 </div>
 
+<!-- Modal: Nuevo aforo -->
 <div class="modal-overlay" id="modal-nuevo-aforo">
   <div class="modal">
     <h2>Nuevo aforo</h2>
@@ -247,6 +275,7 @@ async function supaDelete(t, id) { await fetch(`${SUPA_URL}/rest/v1/${t}?id=eq.$
 let currentComitente = null;
 let comitentes = [], cartera = [], aforos = [], aforosAll = [];
 let mepActual = null;
+let comitentesData = []; // cache con carteras para filtros
 
 function toast(msg) {
   const t = document.getElementById('toast');
@@ -282,7 +311,111 @@ function getAforo(ticker, tipo) {
   return 50;
 }
 
-// ── data912 ─────────────────────────────────────────────────────────────────
+// ── Filtros comitentes ───────────────────────────────────────────────────────
+function actualizarFiltroAFI() {
+  const sel = document.getElementById('filtro-afi');
+  const actual = sel.value;
+  const afis = [...new Set(comitentes.map(c => c.afi || '').filter(a => a.trim()))].sort();
+  sel.innerHTML = '<option value="">Todos los AFIs</option>' +
+    afis.map(a => `<option value="${a}" ${a === actual ? 'selected' : ''}>${a}</option>`).join('');
+}
+
+function aplicarFiltros() {
+  const q = document.querySelector('.filters-row .search-box').value.toLowerCase();
+  const afiSel = document.getElementById('filtro-afi').value;
+  const filtrados = comitentesData.filter(({ c }) => {
+    const matchQ = !q || c.nombre.toLowerCase().includes(q) || c.numero.includes(q);
+    const matchAfi = !afiSel || (c.afi || '') === afiSel;
+    return matchQ && matchAfi;
+  });
+  renderTablaComitentes(filtrados);
+}
+
+function renderTablaComitentes(list) {
+  const tbody = document.getElementById('tabla-comitentes');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Sin resultados</td></tr>'; return;
+  }
+  tbody.innerHTML = list.map(({ c, garantia, nActivos }) => `<tr>
+    <td style="color:#888;">${c.numero}</td>
+    <td><span class="comitente-link" onclick="abrirCartera('${c.id}','${c.nombre.replace(/'/g,"\\'")}','${c.numero}','${(c.afi||'').replace(/'/g,"\\'")}')"> ${c.nombre}</span></td>
+    <td>${c.afi ? `<span class="badge-afi">${c.afi}</span>` : '<span style="color:#ccc;font-size:12px;">—</span>'}</td>
+    <td>${nActivos}</td>
+    <td><strong>${fmtUSD(garantia)}</strong></td>
+    <td style="display:flex;gap:6px;">
+      <button class="btn btn-sm" onclick="abrirEdicion('${c.id}','${c.numero}','${c.nombre.replace(/'/g,"\\'")}','${(c.afi||'').replace(/'/g,"\\'")}')">Editar</button>
+      <button class="btn btn-sm btn-danger" onclick="eliminarComitente('${c.id}')">Eliminar</button>
+    </td>
+  </tr>`).join('');
+}
+
+// ── Comitentes ───────────────────────────────────────────────────────────────
+async function loadComitentes() {
+  const tbody = document.getElementById('tabla-comitentes');
+  tbody.innerHTML = '<tr><td colspan="6" class="empty">Cargando...</td></tr>';
+  [comitentes, aforos] = await Promise.all([supaGet('comitentes','order=nombre.asc'), supaGet('aforos')]);
+  if (!Array.isArray(comitentes) || !comitentes.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">No hay comitentes. Creá el primero.</td></tr>';
+    return;
+  }
+  const carteras = await Promise.all(comitentes.map(c => supaGet('cartera', `comitente_id=eq.${c.id}`)));
+  comitentesData = comitentes.map((c, i) => {
+    const cart = Array.isArray(carteras[i]) ? carteras[i] : [];
+    const garantia = cart.reduce((sum, a) => sum + (a.precio_manual||0) * a.cantidad * (getAforo(a.ticker,a.tipo)/100), 0);
+    return { c, garantia, nActivos: cart.length };
+  });
+  actualizarFiltroAFI();
+  aplicarFiltros();
+}
+
+async function crearComitente() {
+  const numero = document.getElementById('nc-numero').value.trim();
+  const nombre = document.getElementById('nc-nombre').value.trim();
+  const afi = document.getElementById('nc-afi').value.trim();
+  const err = document.getElementById('nc-error');
+  if (!numero || !nombre) { err.textContent='Completá número y nombre'; err.style.display='block'; return; }
+  err.style.display='none';
+  const res = await supaPost('comitentes', { numero, nombre, afi });
+  if (!Array.isArray(res) || res[0]?.code) { err.textContent='Error: número duplicado.'; err.style.display='block'; return; }
+  document.getElementById('nc-numero').value='';
+  document.getElementById('nc-nombre').value='';
+  document.getElementById('nc-afi').value='';
+  closeModal('nuevo-comitente'); toast('Comitente creado'); loadComitentes();
+}
+
+function abrirEdicion(id, numero, nombre, afi) {
+  document.getElementById('ec-id').value = id;
+  document.getElementById('ec-numero').value = numero;
+  document.getElementById('ec-nombre').value = nombre;
+  document.getElementById('ec-afi').value = afi;
+  openModal('editar-comitente');
+}
+
+async function guardarEdicionComitente() {
+  const id = document.getElementById('ec-id').value;
+  const numero = document.getElementById('ec-numero').value.trim();
+  const nombre = document.getElementById('ec-nombre').value.trim();
+  const afi = document.getElementById('ec-afi').value.trim();
+  const err = document.getElementById('ec-error');
+  if (!numero || !nombre) { err.textContent='Completá número y nombre'; err.style.display='block'; return; }
+  err.style.display='none';
+  await supaPatch('comitentes', id, { numero, nombre, afi });
+  closeModal('editar-comitente'); toast('Comitente actualizado'); loadComitentes();
+}
+
+async function eliminarComitente(id) {
+  if (!confirm('¿Eliminar este comitente y toda su cartera?')) return;
+  await supaDelete('comitentes', id); toast('Eliminado'); loadComitentes();
+}
+
+async function abrirCartera(id, nombre, numero, afi) {
+  currentComitente = { id, nombre, numero, afi };
+  document.getElementById('cartera-titulo').textContent = `${numero} — ${nombre}${afi ? ' · ' + afi : ''}`;
+  showPage('cartera');
+  await loadCartera();
+}
+
+// ── data912 ──────────────────────────────────────────────────────────────────
 async function actualizarPrecios() {
   if (!cartera || cartera.length === 0) { toast('No hay activos en cartera'); return; }
   const btn = document.getElementById('btn-actualizar');
@@ -292,7 +425,6 @@ async function actualizarPrecios() {
   let mep = null, precios = {};
 
   try {
-    // Traer MEP y precios en paralelo
     const [resMep, resStocks, resCedears, resBonos] = await Promise.all([
       fetch('https://data912.com/live/mep').then(r => r.json()),
       fetch('https://data912.com/live/arg_stocks').then(r => r.json()),
@@ -300,18 +432,15 @@ async function actualizarPrecios() {
       fetch('https://data912.com/live/bonds').then(r => r.json()).catch(() => [])
     ]);
 
-    // MEP
     if (resMep && resMep.c) mep = parseFloat(resMep.c);
     else if (Array.isArray(resMep) && resMep[0]?.c) mep = parseFloat(resMep[0].c);
     else if (resMep && resMep.price) mep = parseFloat(resMep.price);
 
-    // Fallback MEP desde dolarapi si data912 no lo devuelve bien
     if (!mep || mep <= 0) {
       const dm = await fetch('https://dolarapi.com/v1/dolares/bolsa').then(r => r.json()).catch(() => null);
       if (dm && dm.venta) mep = dm.venta;
     }
 
-    // Mapear precios ARS de cada activo por symbol
     const mapear = (arr) => {
       if (!Array.isArray(arr)) return;
       arr.forEach(item => {
@@ -320,25 +449,19 @@ async function actualizarPrecios() {
         if (sym && precio > 0) precios[sym] = precio;
       });
     };
-    mapear(resStocks);
-    mapear(resCedears);
-    mapear(resBonos);
+    mapear(resStocks); mapear(resCedears); mapear(resBonos);
 
   } catch(e) {
-    document.getElementById('ultimo-update').textContent = 'Error conectando con data912: ' + e.message;
-    btn.disabled = false; btn.textContent = '↻ Actualizar precios';
-    return;
+    document.getElementById('ultimo-update').textContent = 'Error: ' + e.message;
+    btn.disabled = false; btn.textContent = '↻ Actualizar precios'; return;
   }
 
   if (!mep || mep <= 0) {
-    document.getElementById('ultimo-update').textContent = 'No se pudo obtener el MEP. Intentá de nuevo.';
-    btn.disabled = false; btn.textContent = '↻ Actualizar precios';
-    return;
+    document.getElementById('ultimo-update').textContent = 'No se pudo obtener el MEP.';
+    btn.disabled = false; btn.textContent = '↻ Actualizar precios'; return;
   }
 
   mepActual = mep;
-  document.getElementById('ultimo-update').textContent = `MEP: $${mep.toFixed(0)} — Actualizando precios...`;
-
   let actualizados = 0, sinPrecio = [];
 
   for (const activo of cartera) {
@@ -363,59 +486,7 @@ async function actualizarPrecios() {
   toast(`${actualizados} precios actualizados`);
 }
 
-// ── Comitentes ───────────────────────────────────────────────────────────────
-async function loadComitentes() {
-  const tbody = document.getElementById('tabla-comitentes');
-  tbody.innerHTML = '<tr><td colspan="5" class="empty">Cargando...</td></tr>';
-  [comitentes, aforos] = await Promise.all([supaGet('comitentes','order=nombre.asc'), supaGet('aforos')]);
-  if (!Array.isArray(comitentes) || !comitentes.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="empty">No hay comitentes. Creá el primero.</td></tr>'; return;
-  }
-  const carteras = await Promise.all(comitentes.map(c => supaGet('cartera', `comitente_id=eq.${c.id}`)));
-  tbody.innerHTML = comitentes.map((c, i) => {
-    const cart = Array.isArray(carteras[i]) ? carteras[i] : [];
-    const garantia = cart.reduce((sum, a) => sum + (a.precio_manual||0) * a.cantidad * (getAforo(a.ticker,a.tipo)/100), 0);
-    return `<tr>
-      <td style="color:#888;">${c.numero}</td>
-      <td><span class="comitente-link" onclick="abrirCartera('${c.id}','${c.nombre.replace(/'/g,"\\'")}','${c.numero}')">${c.nombre}</span></td>
-      <td>${cart.length}</td>
-      <td><strong>${fmtUSD(garantia)}</strong></td>
-      <td><button class="btn btn-sm btn-danger" onclick="eliminarComitente('${c.id}')">Eliminar</button></td>
-    </tr>`;
-  }).join('');
-}
-
-function filtrarComitentes(q) {
-  document.querySelectorAll('#tabla-comitentes tr').forEach(f => {
-    f.style.display = !q || f.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
-  });
-}
-
-async function crearComitente() {
-  const numero = document.getElementById('nc-numero').value.trim();
-  const nombre = document.getElementById('nc-nombre').value.trim();
-  const err = document.getElementById('nc-error');
-  if (!numero || !nombre) { err.textContent='Completá todos los campos'; err.style.display='block'; return; }
-  err.style.display='none';
-  const res = await supaPost('comitentes', { numero, nombre });
-  if (!Array.isArray(res) || res[0]?.code) { err.textContent='Error: número duplicado.'; err.style.display='block'; return; }
-  document.getElementById('nc-numero').value = '';
-  document.getElementById('nc-nombre').value = '';
-  closeModal('nuevo-comitente'); toast('Comitente creado'); loadComitentes();
-}
-
-async function eliminarComitente(id) {
-  if (!confirm('¿Eliminar este comitente y toda su cartera?')) return;
-  await supaDelete('comitentes', id); toast('Eliminado'); loadComitentes();
-}
-
-async function abrirCartera(id, nombre, numero) {
-  currentComitente = { id, nombre, numero };
-  document.getElementById('cartera-titulo').textContent = `${numero} — ${nombre}`;
-  showPage('cartera');
-  await loadCartera();
-}
-
+// ── Cartera ───────────────────────────────────────────────────────────────────
 async function loadCartera() {
   document.getElementById('tabla-cartera').innerHTML = '<tr><td colspan="8" class="empty">Cargando...</td></tr>';
   [cartera, aforos] = await Promise.all([
@@ -471,8 +542,8 @@ async function agregarActivo() {
   if (!ticker || !cantidad) { err.textContent='Ticker y cantidad son obligatorios'; err.style.display='block'; return; }
   err.style.display='none';
   await supaPost('cartera', { comitente_id: currentComitente.id, ticker, tipo, cantidad, precio_manual: 0 });
-  document.getElementById('na-ticker').value = '';
-  document.getElementById('na-cantidad').value = '';
+  document.getElementById('na-ticker').value='';
+  document.getElementById('na-cantidad').value='';
   closeModal('nuevo-activo'); toast('Activo agregado'); await loadCartera();
 }
 
@@ -481,6 +552,7 @@ async function eliminarActivo(id) {
   await supaDelete('cartera', id); toast('Eliminado'); await loadCartera();
 }
 
+// ── Aforos ────────────────────────────────────────────────────────────────────
 async function loadAforos() {
   aforosAll = await supaGet('aforos', 'order=tipo.asc,ticker.asc');
   aforos = aforosAll; renderAforos(aforosAll);
