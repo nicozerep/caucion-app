@@ -718,7 +718,7 @@ function renderCartera(){
     return`<tr${sinP?' class="sin-precio"':''}>
       <td><strong>${a.ticker}</strong>${sinP?'<span class="badge-sin-precio">Sin precio</span>':''}</td>
       <td><span class="badge badge-${a.tipo}">${a.tipo}</span></td>
-      <td>${Number(a.cantidad).toLocaleString('es-AR')}</td>
+      <td><input class="precio-input" type="number" value="${a.cantidad}" min="0" step="1" onchange="actualizarCantidad('${a.id}',this.value)" style="width:90px;"></td>
       <td style="color:#888;font-size:12px;">${pARS>0?fA(pARS):'—'}</td>
       <td style="font-size:12px;">${pUSD>0?fU(pUSD):'—'}</td>
       <td>${fU(valor)}</td>
@@ -783,6 +783,14 @@ async function agregarActivo(){
   await sp('cartera',{comitente_id:CC.id,ticker,tipo,cantidad,precio_manual:pUSD});
   document.getElementById('na-cantidad').value='';
   closeModal('nuevo-activo');toast('Activo agregado');await loadCartera();
+}
+
+async function actualizarCantidad(id,cantidad){
+  const val=parseFloat(cantidad);
+  if(!val||val<=0){toast('Cantidad inválida');return;}
+  await sph('cartera',id,{cantidad:val,updated_at:new Date().toISOString()});
+  cartera=cartera.map(a=>a.id===id?{...a,cantidad:val}:a);
+  renderCartera();toast('Cantidad actualizada');
 }
 
 async function eliminarActivo(id){
