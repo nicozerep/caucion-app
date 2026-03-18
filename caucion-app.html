@@ -210,7 +210,7 @@ tr:hover td { background: #fafaf8; }
 <div class="modal-overlay" id="modal-nuevo-aforo">
   <div class="modal">
     <h2>Nuevo aforo</h2>
-    <div class="form-group"><label>Ticker (o categoría, ej: CEDEAR)</label><input id="af-ticker" placeholder="ej: GGAL" oninput="this.value=this.value.toUpperCase()"></div>
+    <div class="form-group"><label>Ticker</label><input id="af-ticker" placeholder="ej: GGAL" oninput="this.value=this.value.toUpperCase()"></div>
     <div class="form-group"><label>Tipo</label>
       <select id="af-tipo">
         <option value="accion">Acción local</option>
@@ -234,6 +234,8 @@ tr:hover td { background: #fafaf8; }
 <script>
 const SUPA_URL = 'https://gfektpqyywvofnvoxdio.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmZWt0cHF5eXd2b2Zudm94ZGlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NDIwMDMsImV4cCI6MjA4OTQxODAwM30.jFL-u7JSDVdUUeKZHLLytrhtgbeugwDO4is9Zb2qNSw';
+const IOL_USER = 'mnicozerep';
+const IOL_PASS = 'Nicozerep0119iol#';
 
 const hdrs = {
   'Content-Type': 'application/json',
@@ -264,6 +266,8 @@ let cartera = [];
 let aforos = [];
 let aforosAll = [];
 let mepActual = null;
+let iolToken = null;
+let iolTokenExp = null;
 
 function toast(msg) {
   const t = document.getElementById('toast');
@@ -302,6 +306,58 @@ function getAforo(ticker, tipo) {
   return 50;
 }
 
+// ── IOL Auth ────────────────────────────────────────────────────────────────
+async function getIOLToken() {
+  // Reusar token si no expiró
+  if (iolToken && iolTokenExp && Date.now() < iolTokenExp) return iolToken;
+  try {
+    const body = `username=${encodeURIComponent(IOL_USER)}&password=${encodeURIComponent(IOL_PASS)}&grant_type=password`;
+    const r = await fetch('https://api.invertironline.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body
+    });
+    const d = await r.json();
+    if (d.access_token) {
+      iolToken = d.access_token;
+      iolTokenExp = Date.now() + 13 * 60 * 1000; // 13 min (token dura 15)
+      return iolToken;
+    }
+  } catch(e) { console.error('IOL auth error', e); }
+  return null;
+}
+
+// ── IOL precio cierre ────────────────────────────────────────────────────────
+// mercado: bCBA para acciones/bonos/ONs, bCBA para CEDEARs también
+async function fetchPrecioIOL(ticker, tipo) {
+  const token = await getIOLToken();
+  if (!token) return null;
+  // Determinar mercado según tipo
+  const mercado = 'bCBA'; // BYMA - cubre acciones, CEDEARs, bonos, ONs
+  try {
+    const url = `https://api.invertironline.com/api/v2/${mercado}/Titulos/${ticker}/CotizacionDetalle`;
+    const r = await fetch(url, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const d = await r.json();
+    // El precio de cierre anterior está en ultimoPrecio o en el historial
+    if (d && d.ultimoPrecio && d.ultimoPrecio > 0) return d.ultimoPrecio;
+    if (d && d.ultimo && d.ultimo > 0) return d.ultimo;
+  } catch(e) {}
+  // Fallback: endpoint de cotización simple
+  try {
+    const url2 = `https://api.invertironline.com/api/v2/Cotizaciones/${mercado}/${ticker}`;
+    const r2 = await fetch(url2, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const d2 = await r2.json();
+    if (d2 && d2.ultimoPrecio && d2.ultimoPrecio > 0) return d2.ultimoPrecio;
+    if (d2 && d2.last && d2.last > 0) return d2.last;
+  } catch(e) {}
+  return null;
+}
+
+// ── MEP desde dolarapi ───────────────────────────────────────────────────────
 async function fetchMEP() {
   try {
     const r = await fetch('https://dolarapi.com/v1/dolares/bolsa');
@@ -316,47 +372,34 @@ async function fetchMEP() {
   return null;
 }
 
-async function fetchPrecioARS(ticker) {
-  // Intento 1: API de ambito financiero (pública, sin auth)
-  try {
-    const r = await fetch(`https://mercados.ambito.com/acciones/${ticker}/historico-general/1/1`);
-    const d = await r.json();
-    if (Array.isArray(d) && d[1]) {
-      const precio = parseFloat(d[1][1].replace(',','.'));
-      if (precio > 0) return precio;
-    }
-  } catch(e) {}
-  // Intento 2: API de rava
-  try {
-    const r = await fetch(`https://api.rava.com/cotizaciones/cotizacion.json?cod=${ticker}`);
-    const d = await r.json();
-    if (d && d.ultimo && parseFloat(d.ultimo) > 0) return parseFloat(d.ultimo);
-  } catch(e) {}
-  return null;
-}
-
+// ── Botón Actualizar precios ─────────────────────────────────────────────────
 async function actualizarPrecios() {
   if (!cartera || cartera.length === 0) { toast('No hay activos en cartera'); return; }
   const btn = document.getElementById('btn-actualizar');
   btn.disabled = true;
   btn.textContent = 'Actualizando...';
-  document.getElementById('ultimo-update').textContent = 'Obteniendo tipo de cambio MEP...';
+  document.getElementById('ultimo-update').textContent = 'Conectando con IOL y obteniendo MEP...';
 
-  const mep = await fetchMEP();
+  const [mep, token] = await Promise.all([fetchMEP(), getIOLToken()]);
+
+  if (!token) {
+    document.getElementById('ultimo-update').textContent = 'Error: no se pudo conectar con IOL. Verificá usuario/contraseña.';
+    btn.disabled = false; btn.textContent = '↻ Actualizar precios';
+    return;
+  }
   if (!mep) {
-    toast('No se pudo obtener el MEP. Intentá de nuevo.');
-    btn.disabled = false;
-    btn.textContent = '↻ Actualizar precios';
+    document.getElementById('ultimo-update').textContent = 'Error: no se pudo obtener el MEP.';
+    btn.disabled = false; btn.textContent = '↻ Actualizar precios';
     return;
   }
 
-  document.getElementById('ultimo-update').textContent = `MEP: $${mep.toFixed(0)} — Trayendo precios de cierre...`;
+  document.getElementById('ultimo-update').textContent = `MEP: $${mep.toFixed(0)} — Trayendo precios de IOL...`;
 
   let actualizados = 0;
   let sinPrecio = [];
 
   for (const activo of cartera) {
-    const precioARS = await fetchPrecioARS(activo.ticker);
+    const precioARS = await fetchPrecioIOL(activo.ticker, activo.tipo);
     if (precioARS && precioARS > 0) {
       const precioUSD = precioARS / mep;
       await supaPatch('cartera', activo.id, { precio_manual: precioUSD, updated_at: new Date().toISOString() });
@@ -369,7 +412,7 @@ async function actualizarPrecios() {
 
   const ahora = new Date().toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' });
   let msg = `Última actualización: ${ahora} · MEP: $${mep.toFixed(0)} · ${actualizados} de ${cartera.length} activos actualizados`;
-  if (sinPrecio.length > 0) msg += ` · Sin precio API: ${sinPrecio.join(', ')} (cargalos a mano)`;
+  if (sinPrecio.length > 0) msg += ` · Sin precio: ${sinPrecio.join(', ')} (cargalos a mano)`;
   document.getElementById('ultimo-update').textContent = msg;
 
   renderCartera();
@@ -378,6 +421,7 @@ async function actualizarPrecios() {
   toast(`${actualizados} precios actualizados`);
 }
 
+// ── Comitentes ───────────────────────────────────────────────────────────────
 async function loadComitentes() {
   const tbody = document.getElementById('tabla-comitentes');
   tbody.innerHTML = '<tr><td colspan="5" class="empty">Cargando...</td></tr>';
@@ -424,7 +468,7 @@ async function crearComitente() {
   if (!numero || !nombre) { err.textContent = 'Completá todos los campos'; err.style.display='block'; return; }
   err.style.display = 'none';
   const res = await supaPost('comitentes', { numero, nombre });
-  if (!Array.isArray(res) || res[0]?.code) { err.textContent = 'Error: número duplicado o problema de conexión.'; err.style.display='block'; return; }
+  if (!Array.isArray(res) || res[0]?.code) { err.textContent = 'Error: número duplicado.'; err.style.display='block'; return; }
   document.getElementById('nc-numero').value = '';
   document.getElementById('nc-nombre').value = '';
   closeModal('nuevo-comitente');
