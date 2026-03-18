@@ -288,6 +288,21 @@ tr.sin-precio { background: #fff8f8; }
         <option value="">— Seleccioná un ticker —</option>
       </select>
     </div>
+    <div id="na-nuevo-ticker-wrap" style="display:none;">
+      <div style="font-size:12px;color:#888;margin:-6px 0 10px;padding:8px 10px;background:#f5f5f3;border-radius:8px;">
+        El ticker no está en la lista de precios. Completá los datos y se agregará automáticamente.
+      </div>
+      <div class="form-group"><label>Ticker nuevo</label><input id="na-ticker-nuevo" placeholder="ej: GGAL" oninput="this.value=this.value.toUpperCase()"></div>
+      <div class="form-group"><label>Tipo</label>
+        <select id="na-tipo-nuevo">
+          <option value="accion">Acción local</option>
+          <option value="cedear">CEDEAR</option>
+          <option value="bono">Bono</option>
+          <option value="on">ON</option>
+          <option value="fci">FCI</option>
+        </select>
+      </div>
+    </div>
     <div class="form-group"><label>Cantidad</label><input id="na-cantidad" type="number" placeholder="0" min="0"></div>
     <div id="na-info" style="font-size:12px;color:#888;padding:6px 0;min-height:20px;"></div>
     <div id="na-error" class="error-msg" style="display:none;"></div>
@@ -777,31 +792,51 @@ async function openModalActivo(){
       sel.appendChild(opt);
     });
   }
+  const optNuevo=document.createElement('option');
+  optNuevo.value='__nuevo__';
+  optNuevo.textContent='+ Agregar ticker nuevo...';
+  sel.appendChild(optNuevo);
   document.getElementById('na-cantidad').value='';
   document.getElementById('na-info').textContent='';
   document.getElementById('na-error').style.display='none';
+  document.getElementById('na-nuevo-ticker-wrap').style.display='none';
   openModal('nuevo-activo');
 }
 
 function onTickerChange(){
   const ticker=document.getElementById('na-ticker-sel').value;
-  const pr=preciosList.find(p=>p.ticker===ticker);
+  const wrap=document.getElementById('na-nuevo-ticker-wrap');
   const info=document.getElementById('na-info');
+  if(ticker==='__nuevo__'){wrap.style.display='block';info.textContent='';return;}
+  wrap.style.display='none';
+  const pr=preciosList.find(p=>p.ticker===ticker);
   if(!pr){info.textContent='';return;}
   if(pr.precio_usd>0)info.textContent=`Precio: ${pr.precio_ars>0?fA(parseFloat(pr.precio_ars))+' · ':''} ${fU(parseFloat(pr.precio_usd))}`;
-  else info.textContent='⚠ Este ticker no tiene precio. Podés cargarlo en la sección Precios.';
+  else info.textContent='⚠ Este ticker no tiene precio aún. Se actualizará al próximo "Actualizar desde API".';
 }
 
 async function agregarActivo(){
   const sel=document.getElementById('na-ticker-sel');
-  const ticker=sel.value;
-  const tipo=sel.options[sel.selectedIndex]?.dataset?.tipo||'accion';
-  const cantidad=parseFloat(document.getElementById('na-cantidad').value);
   const err=document.getElementById('na-error');
+  const cantidad=parseFloat(document.getElementById('na-cantidad').value);
+  let ticker, tipo, pUSD=0;
+  if(sel.value==='__nuevo__'){
+    ticker=document.getElementById('na-ticker-nuevo').value.trim().toUpperCase();
+    tipo=document.getElementById('na-tipo-nuevo').value;
+    if(!ticker){err.textContent='Ingresá el ticker';err.style.display='block';return;}
+    const existe=preciosList.find(p=>p.ticker===ticker);
+    if(existe){err.textContent='Ese ticker ya existe en la lista de precios';err.style.display='block';return;}
+    await sp('precios',{ticker,tipo,precio_ars:0,precio_usd:0,tiene_api:true});
+    preciosList=await sg('precios','order=ticker.asc');
+    toast('Ticker agregado a Precios — actualizá precios para traer el valor');
+  } else {
+    ticker=sel.value;
+    tipo=sel.options[sel.selectedIndex]?.dataset?.tipo||'accion';
+    const pr=getPrecio(ticker);
+    pUSD=pr?parseFloat(pr.precio_usd||0):0;
+  }
   if(!ticker||!cantidad||cantidad<=0){err.textContent='Seleccioná un ticker e ingresá la cantidad';err.style.display='block';return;}
   err.style.display='none';
-  const pr=getPrecio(ticker);
-  const pUSD=pr?parseFloat(pr.precio_usd||0):0;
   await sp('cartera',{comitente_id:CC.id,ticker,tipo,cantidad,precio_manual:pUSD});
   document.getElementById('na-cantidad').value='';
   closeModal('nuevo-activo');toast('Activo agregado');await loadCartera();
