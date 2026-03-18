@@ -133,8 +133,8 @@ tr.sin-precio { background: #fff8f8; }
       <div class="card" style="padding:0;">
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Número</th><th>Nombre</th><th>AFI</th><th>Garantía disp.</th><th>Tomado</th><th>Disponible neto</th><th>Próx. vencimiento</th><th></th></tr></thead>
-            <tbody id="tabla-comitentes"><tr><td colspan="8" class="empty">Cargando...</td></tr></tbody>
+            <thead><tr><th>Número</th><th>Nombre</th><th>AFI</th><th>Garantía disp.</th><th>Tomado</th><th>Disponible neto</th><th>Próx. vencimiento</th><th>Monto próx. venc.</th><th></th></tr></thead>
+            <tbody id="tabla-comitentes"><tr><td colspan="9" class="empty">Cargando...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -610,7 +610,7 @@ async function loadComitentes(){
   const tbody=document.getElementById('tabla-comitentes');
   tbody.innerHTML='<tr><td colspan="8" class="empty">Cargando...</td></tr>';
   [comitentes,aforos,aforosTipo,preciosList]=await Promise.all([sg('comitentes','order=nombre.asc'),sg('aforos'),sg('aforos_tipo','order=tipo.asc'),sg('precios','order=ticker.asc')]);
-  if(!Array.isArray(comitentes)||!comitentes.length){tbody.innerHTML='<tr><td colspan="8" class="empty">No hay comitentes.</td></tr>';return;}
+  if(!Array.isArray(comitentes)||!comitentes.length){tbody.innerHTML='<tr><td colspan="9" class="empty">No hay comitentes.</td></tr>';return;}
   const[carteras,cauciones]=await Promise.all([
     Promise.all(comitentes.map(c=>sg('cartera',`comitente_id=eq.${c.id}`))),
     Promise.all(comitentes.map(c=>sg('cauciones',`comitente_id=eq.${c.id}&activa=eq.true&order=fecha_vencimiento.asc`)))
@@ -624,7 +624,7 @@ async function loadComitentes(){
       const f=(a.tipo==="bono"||a.tipo==="on")?0.01:1;return s+pUSD*a.cantidad*f*(getAforo(a.ticker,a.tipo)/100);
     },0);
     const tomado=caus.reduce((s,c)=>s+parseFloat(c.monto_usd||0),0);
-    return{c,garantia,tomado,neto:garantia-tomado,proxVenc:caus.length?caus[0].fecha_vencimiento:null};
+    return{c,garantia,tomado,neto:garantia-tomado,proxVenc:caus.length?caus[0].fecha_vencimiento:null,proxMonto:caus.length?parseFloat(caus[0].monto_usd||0):0};
   });
   // Ordenar por próximo vencimiento: primero los que vencen antes, luego los que no tienen caución
   comitentesData.sort((a,b)=>{
@@ -652,8 +652,8 @@ function aplicarFiltros(){
 
 function renderTablaComitentes(list){
   const tbody=document.getElementById('tabla-comitentes');
-  if(!list.length){tbody.innerHTML='<tr><td colspan="8" class="empty">Sin resultados</td></tr>';return;}
-  tbody.innerHTML=list.map(({c,garantia,tomado,neto,proxVenc})=>{
+  if(!list.length){tbody.innerHTML='<tr><td colspan="9" class="empty">Sin resultados</td></tr>';return;}
+  tbody.innerHTML=list.map(({c,garantia,tomado,neto,proxVenc,proxMonto})=>{
     const nc=neto>=0?'neto-positivo':'neto-negativo';
     let vB='<span style="color:#ccc;font-size:12px;">—</span>';
     if(proxVenc){const d=dH(proxVenc);vB=d<=0?`<span class="badge-vence-hoy">Hoy</span>`:d<=3?`<span class="badge-vence-pronto">${fF(proxVenc)}</span>`:`<span style="font-size:12px;">${fF(proxVenc)}</span>`;}
@@ -665,6 +665,7 @@ function renderTablaComitentes(list){
       <td>${tomado>0?fU(tomado):'<span style="color:#ccc;">—</span>'}</td>
       <td><span class="${nc}">${fU(neto)}</span></td>
       <td>${vB}</td>
+      <td>${proxMonto>0?fU(proxMonto):'<span style="color:#ccc;">—</span>'}</td>
       <td style="display:flex;gap:6px;">
         <button class="btn btn-sm" onclick="abrirEdicion('${c.id}','${c.numero}','${c.nombre.replace(/'/g,"\\'")}','${(c.afi||'').replace(/'/g,"\\'")}')">Editar</button>
         <button class="btn btn-sm btn-danger" onclick="eliminarComitente('${c.id}')">×</button>
