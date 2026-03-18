@@ -27,8 +27,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .btn-primary:hover { background: #333; }
 .btn-danger { color: #c0392b; border-color: #f5c6c2; }
 .btn-danger:hover { background: #fff5f5; }
-.btn-success { color: #1a7a4a; border-color: #b7e0c8; }
-.btn-success:hover { background: #f0faf4; }
 .btn-warning { color: #7a5a00; border-color: #f5d98a; }
 .btn-warning:hover { background: #fffbf0; }
 .btn-sm { padding: 4px 10px; font-size: 12px; }
@@ -44,6 +42,8 @@ th { text-align: left; padding: 9px 14px; color: #888; font-weight: 500; border-
 td { padding: 10px 14px; border-bottom: 1px solid #f0f0ee; color: #1a1a1a; vertical-align: middle; }
 tr:last-child td { border-bottom: none; }
 tr:hover td { background: #fafaf8; }
+tr.sin-precio td { background: #fff8f8; }
+tr.sin-precio td:first-child { border-left: 3px solid #e24b4a; }
 .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
 .badge-accion { background: #E6F1FB; color: #0C447C; }
 .badge-cedear { background: #EAF3DE; color: #27500A; }
@@ -53,6 +53,7 @@ tr:hover td { background: #fafaf8; }
 .badge-afi { background: #f0f0ee; color: #555; font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
 .badge-vence-hoy { background: #FCEBEB; color: #A32D2D; font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
 .badge-vence-pronto { background: #FAEEDA; color: #633806; font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+.badge-sin-precio { background: #FCEBEB; color: #A32D2D; font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 100; align-items: center; justify-content: center; }
 .modal-overlay.open { display: flex; }
 .modal { background: #fff; border-radius: 12px; padding: 24px; width: 440px; max-width: 95vw; border: 1px solid #ddd; box-shadow: 0 8px 32px rgba(0,0,0,0.12); max-height: 90vh; overflow-y: auto; }
@@ -86,6 +87,7 @@ tr:hover td { background: #fafaf8; }
 .neto-positivo { color: #1a7a4a; font-weight: 600; }
 .neto-negativo { color: #c0392b; font-weight: 600; }
 .section-title { font-size: 14px; font-weight: 600; margin: 20px 0 10px; color: #1a1a1a; }
+.sin-precio-label { color: #e24b4a; font-weight: 500; font-size: 12px; }
 </style>
 </head>
 <body>
@@ -99,6 +101,10 @@ tr:hover td { background: #fafaf8; }
       <div class="nav-item active" onclick="showPage('comitentes')">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
         Comitentes
+      </div>
+      <div class="nav-item" onclick="showPage('precios')">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12l4-4 3 3 5-6"/></svg>
+        Precios
       </div>
       <div class="nav-item" onclick="showPage('aforos')">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8h6M5 11h4M5 5h6"/></svg>
@@ -133,17 +139,35 @@ tr:hover td { background: #fafaf8; }
           <table>
             <thead>
               <tr>
-                <th>Número</th>
-                <th>Nombre</th>
-                <th>AFI</th>
-                <th>Garantía disponible</th>
-                <th>Tomado</th>
-                <th>Disponible neto</th>
-                <th>Próx. vencimiento</th>
-                <th></th>
+                <th>Número</th><th>Nombre</th><th>AFI</th>
+                <th>Garantía disp.</th><th>Tomado</th><th>Disponible neto</th>
+                <th>Próx. vencimiento</th><th></th>
               </tr>
             </thead>
             <tbody id="tabla-comitentes"><tr><td colspan="8" class="empty">Cargando...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRECIOS -->
+    <div class="page" id="page-precios">
+      <div class="page-header">
+        <span class="page-title">Precios de mercado</span>
+        <div style="display:flex;gap:8px;">
+          <button class="btn" id="btn-actualizar-precios" onclick="actualizarPreciosGlobal()">↻ Actualizar desde API</button>
+          <button class="btn btn-primary" onclick="openModal('nuevo-precio')">+ Agregar ticker</button>
+        </div>
+      </div>
+      <div class="update-bar">
+        <span id="update-status-precios">Los tickers en rojo no tienen precio de la API — podés cargarlo a mano.</span>
+      </div>
+      <input class="search-box" placeholder="Buscar ticker..." oninput="filtrarPrecios(this.value)" style="margin-bottom:16px;width:100%;">
+      <div class="card" style="padding:0;">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Ticker</th><th>Tipo</th><th>Precio USD</th><th>Precio ARS</th><th>Última actualización</th><th></th></tr></thead>
+            <tbody id="tabla-precios"><tr><td colspan="6" class="empty">Cargando...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -156,7 +180,6 @@ tr:hover td { background: #fafaf8; }
         <span class="page-title" id="cartera-titulo">Cartera</span>
         <button class="btn btn-primary" onclick="openModal('nuevo-activo')">+ Agregar activo</button>
       </div>
-
       <div class="stat-row">
         <div class="stat-card">
           <div class="stat-label">Garantía disponible</div>
@@ -174,7 +197,6 @@ tr:hover td { background: #fafaf8; }
           <div class="stat-sub">para tomar</div>
         </div>
       </div>
-
       <p class="section-title">Activos en cartera</p>
       <div class="card" style="padding:0;">
         <div class="table-wrap">
@@ -184,7 +206,6 @@ tr:hover td { background: #fafaf8; }
           </table>
         </div>
       </div>
-
       <div style="display:flex;align-items:center;justify-content:space-between;margin:20px 0 10px;">
         <p class="section-title" style="margin:0;">Cauciones activas</p>
         <button class="btn btn-primary btn-sm" onclick="openModal('nueva-caucion')">+ Nueva caución</button>
@@ -254,9 +275,28 @@ tr:hover td { background: #fafaf8; }
 <div class="modal-overlay" id="modal-nuevo-activo">
   <div class="modal">
     <h2>Agregar activo</h2>
-    <div class="form-group"><label>Ticker</label><input id="na-ticker" placeholder="ej: GGAL, AAPL, AL30" oninput="this.value=this.value.toUpperCase()"></div>
+    <div class="form-group"><label>Ticker</label>
+      <select id="na-ticker-sel">
+        <option value="">— Seleccioná un ticker —</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Cantidad</label><input id="na-cantidad" type="number" placeholder="0"></div>
+    <div id="na-precio-preview" style="font-size:12px;color:#888;margin-top:-8px;margin-bottom:4px;"></div>
+    <div id="na-error" class="error-msg" style="display:none;"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('nuevo-activo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="agregarActivo()">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Nuevo precio -->
+<div class="modal-overlay" id="modal-nuevo-precio">
+  <div class="modal">
+    <h2>Agregar ticker</h2>
+    <div class="form-group"><label>Ticker</label><input id="np-ticker" placeholder="ej: GGAL" oninput="this.value=this.value.toUpperCase()"></div>
     <div class="form-group"><label>Tipo</label>
-      <select id="na-tipo">
+      <select id="np-tipo">
         <option value="accion">Acción local</option>
         <option value="cedear">CEDEAR</option>
         <option value="bono">Bono</option>
@@ -264,11 +304,11 @@ tr:hover td { background: #fafaf8; }
         <option value="fci">FCI</option>
       </select>
     </div>
-    <div class="form-group"><label>Cantidad</label><input id="na-cantidad" type="number" placeholder="0"></div>
-    <div id="na-error" class="error-msg" style="display:none;"></div>
+    <div class="form-group"><label>Precio USD manual (opcional)</label><input id="np-precio" type="number" placeholder="0.0000" step="0.0001"></div>
+    <div id="np-error" class="error-msg" style="display:none;"></div>
     <div class="modal-actions">
-      <button class="btn" onclick="closeModal('nuevo-activo')">Cancelar</button>
-      <button class="btn btn-primary" onclick="agregarActivo()">Agregar</button>
+      <button class="btn" onclick="closeModal('nuevo-precio')">Cancelar</button>
+      <button class="btn btn-primary" onclick="crearPrecio()">Guardar</button>
     </div>
   </div>
 </div>
@@ -333,26 +373,36 @@ tr:hover td { background: #fafaf8; }
 <script>
 const SUPA_URL = 'https://gfektpqyywvofnvoxdio.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmZWt0cHF5eXd2b2Zudm94ZGlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NDIwMDMsImV4cCI6MjA4OTQxODAwM30.jFL-u7JSDVdUUeKZHLLytrhtgbeugwDO4is9Zb2qNSw';
-const hdrs = { 'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'return=representation' };
+const hdrs = {'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'return=representation'};
 
 async function supaGet(t,p=''){return(await fetch(`${SUPA_URL}/rest/v1/${t}?${p}`,{headers:hdrs})).json();}
 async function supaPost(t,b){return(await fetch(`${SUPA_URL}/rest/v1/${t}`,{method:'POST',headers:hdrs,body:JSON.stringify(b)})).json();}
 async function supaPatch(t,id,b){return(await fetch(`${SUPA_URL}/rest/v1/${t}?id=eq.${id}`,{method:'PATCH',headers:hdrs,body:JSON.stringify(b)})).json();}
+async function supaPatchWhere(t,where,b){return(await fetch(`${SUPA_URL}/rest/v1/${t}?${where}`,{method:'PATCH',headers:hdrs,body:JSON.stringify(b)})).json();}
 async function supaDelete(t,id){await fetch(`${SUPA_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE',headers:hdrs});}
 
-let currentComitente=null, comitentes=[], cartera=[], aforos=[], aforosAll=[], comitentesData=[];
-let mepActual=null, preciosGlobal={};
+let currentComitente=null, comitentes=[], cartera=[], aforos=[], aforosAll=[];
+let comitentesData=[], preciosList=[], preciosAll=[];
+let mepActual=null;
 
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 function fmtUSD(n){return'U$S '+Number(n).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function hoy(){return new Date().toISOString().split('T')[0];}
+function addDias(f,d){const dt=new Date(f);dt.setDate(dt.getDate()+parseInt(d));return dt.toISOString().split('T')[0];}
+function fmtFecha(f){if(!f)return'—';const[y,m,d]=f.split('-');return`${d}/${m}/${y}`;}
+function diasHasta(f){const h=new Date();h.setHours(0,0,0,0);return Math.round((new Date(f+'T00:00:00')-h)/(864e5));}
 
 function showPage(p){
   document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
-  document.querySelectorAll('.nav-item')[p==='aforos'?1:0].classList.add('active');
-  if(p==='comitentes') loadComitentes();
-  if(p==='aforos') loadAforos();
+  const nav=document.querySelectorAll('.nav-item');
+  if(p==='comitentes'||p==='cartera')nav[0].classList.add('active');
+  if(p==='precios')nav[1].classList.add('active');
+  if(p==='aforos')nav[2].classList.add('active');
+  if(p==='comitentes')loadComitentes();
+  if(p==='precios')loadPrecios();
+  if(p==='aforos')loadAforos();
 }
 
 function openModal(id){document.getElementById('modal-'+id).classList.add('open');}
@@ -368,50 +418,19 @@ function getAforo(ticker,tipo){
   return 72;
 }
 
-// ── Fechas ────────────────────────────────────────────────────────────────────
-function hoy(){return new Date().toISOString().split('T')[0];}
-function addDias(fecha,dias){const d=new Date(fecha);d.setDate(d.getDate()+parseInt(dias));return d.toISOString().split('T')[0];}
-function fmtFecha(f){if(!f)return'—';const[y,m,d]=f.split('-');return`${d}/${m}/${y}`;}
-function diasHasta(f){
-  const hoyD=new Date(); hoyD.setHours(0,0,0,0);
-  const fD=new Date(f+'T00:00:00');
-  return Math.round((fD-hoyD)/(1000*60*60*24));
+function getPrecioUSD(ticker){
+  const p=preciosList.find(x=>x.ticker.toUpperCase()===ticker.toUpperCase());
+  return p?parseFloat(p.precio_usd||0):0;
 }
 
-// ── Alerta vencimientos ───────────────────────────────────────────────────────
-async function checkVencimientos(){
-  const cauciones=await supaGet('cauciones','activa=eq.true&select=*,comitentes(nombre,numero)');
-  if(!Array.isArray(cauciones))return;
-  const hoyStr=hoy();
-  const vencenHoy=cauciones.filter(c=>c.fecha_vencimiento===hoyStr);
-  const vencenProximos=cauciones.filter(c=>{const d=diasHasta(c.fecha_vencimiento);return d>0&&d<=3;});
-  const banner=document.getElementById('alert-vencimientos');
-  if(!vencenHoy.length&&!vencenProximos.length){banner.innerHTML='';return;}
-  let html='<div class="alert-banner"><h3>⚠ Vencimientos</h3><ul>';
-  vencenHoy.forEach(c=>{
-    const nom=c.comitentes?.nombre||'';
-    html+=`<li><span>${nom} — ${fmtUSD(c.monto_usd)} vence <strong>HOY</strong></span>
-      <span style="display:flex;gap:6px;">
-        <button class="btn btn-sm btn-warning" onclick="abrirRenovar('${c.id}',${c.monto_usd},'${c.fecha_vencimiento}','${nom}')">Renovar</button>
-        <button class="btn btn-sm btn-danger" onclick="cerrarCaucion('${c.id}')">Cerrar</button>
-      </span></li>`;
-  });
-  vencenProximos.forEach(c=>{
-    const nom=c.comitentes?.nombre||'';
-    const d=diasHasta(c.fecha_vencimiento);
-    html+=`<li><span>${nom} — ${fmtUSD(c.monto_usd)} vence en <strong>${d} día${d!==1?'s':''}</strong> (${fmtFecha(c.fecha_vencimiento)})</span></li>`;
-  });
-  html+='</ul></div>';
-  banner.innerHTML=html;
-}
-
-// ── Actualizar precios global ─────────────────────────────────────────────────
+// ── Actualizar precios (data912) ─────────────────────────────────────────────
 async function actualizarPreciosGlobal(){
-  const btn=document.getElementById('btn-actualizar-global');
-  btn.disabled=true; btn.textContent='Actualizando...';
-  document.getElementById('update-status-global').textContent='Conectando con data912...';
+  const btnIds=['btn-actualizar-global','btn-actualizar-precios'];
+  btnIds.forEach(id=>{const b=document.getElementById(id);if(b){b.disabled=true;b.textContent='Actualizando...';}});
+  const statusIds=['update-status-global','update-status-precios'];
+  statusIds.forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='Conectando con data912...';});
 
-  let mep=null; preciosGlobal={};
+  let mep=null, preciosARS={};
   try{
     const[resMep,resStocks,resCedears,resBonos]=await Promise.all([
       fetch('https://data912.com/live/mep').then(r=>r.json()),
@@ -422,45 +441,132 @@ async function actualizarPreciosGlobal(){
     if(resMep&&resMep.c)mep=parseFloat(resMep.c);
     else if(Array.isArray(resMep)&&resMep[0]?.c)mep=parseFloat(resMep[0].c);
     if(!mep||mep<=0){const dm=await fetch('https://dolarapi.com/v1/dolares/bolsa').then(r=>r.json()).catch(()=>null);if(dm&&dm.venta)mep=dm.venta;}
-    const mapear=(arr)=>{if(!Array.isArray(arr))return;arr.forEach(item=>{const sym=(item.symbol||item.ticker||'').toUpperCase();const precio=parseFloat(item.c||item.price||item.ultimo||0);if(sym&&precio>0)preciosGlobal[sym]=precio;});};
+    const mapear=arr=>{if(!Array.isArray(arr))return;arr.forEach(item=>{const sym=(item.symbol||item.ticker||'').toUpperCase();const p=parseFloat(item.c||item.price||item.ultimo||0);if(sym&&p>0)preciosARS[sym]=p;});};
     mapear(resStocks);mapear(resCedears);mapear(resBonos);
   }catch(e){
-    document.getElementById('update-status-global').textContent='Error: '+e.message;
-    btn.disabled=false;btn.textContent='↻ Actualizar precios';return;
+    statusIds.forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='Error: '+e.message;});
+    btnIds.forEach(id=>{const b=document.getElementById(id);if(b){b.disabled=false;b.textContent=id.includes('precios')?'↻ Actualizar desde API':'↻ Actualizar precios';}});
+    return;
   }
 
   if(!mep||mep<=0){
-    document.getElementById('update-status-global').textContent='No se pudo obtener el MEP.';
-    btn.disabled=false;btn.textContent='↻ Actualizar precios';return;
+    statusIds.forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='No se pudo obtener el MEP.';});
+    btnIds.forEach(id=>{const b=document.getElementById(id);if(b){b.disabled=false;b.textContent=id.includes('precios')?'↻ Actualizar desde API':'↻ Actualizar precios';}});
+    return;
   }
   mepActual=mep;
 
-  // Actualizar todos los activos de todos los comitentes
-  const todosActivos=await supaGet('cartera','select=*');
-  let actualizados=0;
-  if(Array.isArray(todosActivos)){
-    for(const activo of todosActivos){
-      const pARS=preciosGlobal[activo.ticker.toUpperCase()];
+  // Actualizar tabla precios
+  const todosPrecios=await supaGet('precios','order=ticker.asc');
+  let actualizados=0, sinPrecio=[];
+  if(Array.isArray(todosPrecios)){
+    for(const p of todosPrecios){
+      const pARS=preciosARS[p.ticker.toUpperCase()];
       if(pARS&&pARS>0){
         const pUSD=pARS/mep;
-        await supaPatch('cartera',activo.id,{precio_manual:pUSD,updated_at:new Date().toISOString()});
+        await supaPatch('precios',p.id,{precio_usd:pUSD,precio_ars:pARS,tiene_api:true,updated_at:new Date().toISOString()});
         actualizados++;
+      } else {
+        await supaPatch('precios',p.id,{tiene_api:false,updated_at:new Date().toISOString()});
+        sinPrecio.push(p.ticker);
       }
     }
   }
 
+  // Actualizar precio_manual en cartera desde tabla precios
+  preciosList=await supaGet('precios','order=ticker.asc');
+  const todosActivos=await supaGet('cartera','select=*');
+  if(Array.isArray(todosActivos)){
+    for(const a of todosActivos){
+      const pUSD=getPrecioUSD(a.ticker);
+      if(pUSD>0)await supaPatch('cartera',a.id,{precio_manual:pUSD,updated_at:new Date().toISOString()});
+    }
+  }
+
   const ahora=new Date().toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'});
-  document.getElementById('update-status-global').textContent=`Actualizado: ${ahora} · MEP: $${mep.toFixed(0)} · ${actualizados} activos actualizados`;
-  btn.disabled=false; btn.textContent='↻ Actualizar precios';
+  let msg=`Actualizado: ${ahora} · MEP: $${mep.toFixed(0)} · ${actualizados} tickers con precio API`;
+  if(sinPrecio.length)msg+=` · Sin precio API: ${sinPrecio.join(', ')}`;
+  statusIds.forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=msg;});
+  btnIds.forEach(id=>{const b=document.getElementById(id);if(b){b.disabled=false;b.textContent=id.includes('precios')?'↻ Actualizar desde API':'↻ Actualizar precios';}});
   toast(`${actualizados} precios actualizados`);
-  loadComitentes();
+
+  // Recargar vistas si están activas
+  if(document.getElementById('page-comitentes').classList.contains('active'))loadComitentes();
+  if(document.getElementById('page-precios').classList.contains('active'))loadPrecios();
+  if(document.getElementById('page-cartera').classList.contains('active'))loadCartera();
+}
+
+// ── Precios ───────────────────────────────────────────────────────────────────
+async function loadPrecios(){
+  document.getElementById('tabla-precios').innerHTML='<tr><td colspan="6" class="empty">Cargando...</td></tr>';
+  preciosAll=await supaGet('precios','order=ticker.asc');
+  preciosList=preciosAll;
+  renderPrecios(preciosAll);
+}
+
+function filtrarPrecios(q){
+  renderPrecios(!q?preciosAll:preciosAll.filter(p=>p.ticker.toLowerCase().includes(q.toLowerCase())));
+}
+
+function renderPrecios(list){
+  const tbody=document.getElementById('tabla-precios');
+  if(!Array.isArray(list)||!list.length){tbody.innerHTML='<tr><td colspan="6" class="empty">No hay tickers cargados. Agregá uno o actualizá precios.</td></tr>';return;}
+  tbody.innerHTML=list.map(p=>{
+    const sinPrecio=!p.precio_usd||p.precio_usd<=0;
+    const updated=p.updated_at?new Date(p.updated_at).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'}):'—';
+    return`<tr class="${sinPrecio?'sin-precio':''}">
+      <td><strong>${p.ticker}</strong>${sinPrecio?' <span class="badge-sin-precio">Sin precio</span>':''}</td>
+      <td><span class="badge badge-${p.tipo}">${p.tipo}</span></td>
+      <td><input class="precio-input" type="number" value="${p.precio_usd>0?parseFloat(p.precio_usd).toFixed(4):''}" placeholder="0.0000" step="0.0001" onchange="actualizarPrecioManual('${p.id}',this.value,'${p.ticker}')"></td>
+      <td style="color:#888;font-size:12px;">${p.precio_ars>0?'$'+parseFloat(p.precio_ars).toLocaleString('es-AR',{maximumFractionDigits:2}):'—'}</td>
+      <td style="color:#aaa;font-size:12px;">${updated}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="eliminarPrecio('${p.id}')">×</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function actualizarPrecioManual(id,precio,ticker){
+  const val=parseFloat(precio);
+  await supaPatch('precios',id,{precio_usd:val,updated_at:new Date().toISOString()});
+  // Actualizar cartera también
+  const activos=await supaGet('cartera',`ticker=eq.${ticker}`);
+  if(Array.isArray(activos)){
+    for(const a of activos)await supaPatch('cartera',a.id,{precio_manual:val,updated_at:new Date().toISOString()});
+  }
+  preciosAll=await supaGet('precios','order=ticker.asc');
+  preciosList=preciosAll;
+  toast('Precio actualizado');
+  if(document.getElementById('page-cartera').classList.contains('active'))renderCartera();
+}
+
+async function eliminarPrecio(id){
+  if(!confirm('¿Eliminar este ticker de la lista de precios?'))return;
+  await supaDelete('precios',id);toast('Eliminado');loadPrecios();
+}
+
+async function crearPrecio(){
+  const ticker=document.getElementById('np-ticker').value.trim().toUpperCase();
+  const tipo=document.getElementById('np-tipo').value;
+  const precio=parseFloat(document.getElementById('np-precio').value)||0;
+  const err=document.getElementById('np-error');
+  if(!ticker){err.textContent='Ingresá el ticker';err.style.display='block';return;}
+  err.style.display='none';
+  const res=await supaPost('precios',{ticker,tipo,precio_usd:precio,precio_ars:0,tiene_api:true});
+  if(!Array.isArray(res)||res[0]?.code){err.textContent='Error: ese ticker ya existe.';err.style.display='block';return;}
+  document.getElementById('np-ticker').value='';
+  document.getElementById('np-precio').value='';
+  closeModal('nuevo-precio');toast('Ticker agregado');loadPrecios();
 }
 
 // ── Comitentes ────────────────────────────────────────────────────────────────
 async function loadComitentes(){
   const tbody=document.getElementById('tabla-comitentes');
   tbody.innerHTML='<tr><td colspan="8" class="empty">Cargando...</td></tr>';
-  [comitentes,aforos]=await Promise.all([supaGet('comitentes','order=nombre.asc'),supaGet('aforos')]);
+  [comitentes,aforos,preciosList]=await Promise.all([
+    supaGet('comitentes','order=nombre.asc'),
+    supaGet('aforos'),
+    supaGet('precios','order=ticker.asc')
+  ]);
   if(!Array.isArray(comitentes)||!comitentes.length){
     tbody.innerHTML='<tr><td colspan="8" class="empty">No hay comitentes.</td></tr>';return;
   }
@@ -490,7 +596,7 @@ function actualizarFiltroAFI(){
 }
 
 function aplicarFiltros(){
-  const q=document.querySelector('.filters-row .search-box').value.toLowerCase();
+  const q=document.querySelector('#page-comitentes .search-box').value.toLowerCase();
   const afiSel=document.getElementById('filtro-afi').value;
   const f=comitentesData.filter(({c})=>{
     const mQ=!q||c.nombre.toLowerCase().includes(q)||c.numero.includes(q);
@@ -503,7 +609,7 @@ function aplicarFiltros(){
 function renderTablaComitentes(list){
   const tbody=document.getElementById('tabla-comitentes');
   if(!list.length){tbody.innerHTML='<tr><td colspan="8" class="empty">Sin resultados</td></tr>';return;}
-  tbody.innerHTML=list.map(({c,garantia,tomado,neto,proxVenc,nActivos})=>{
+  tbody.innerHTML=list.map(({c,garantia,tomado,neto,proxVenc})=>{
     const netoClass=neto>=0?'neto-positivo':'neto-negativo';
     let vencBadge='<span style="color:#ccc;font-size:12px;">—</span>';
     if(proxVenc){
@@ -566,14 +672,41 @@ async function eliminarComitente(id){
   await supaDelete('comitentes',id);toast('Eliminado');loadComitentes();
 }
 
+async function checkVencimientos(){
+  const cauciones=await supaGet('cauciones','activa=eq.true&select=*,comitentes(nombre,numero)');
+  if(!Array.isArray(cauciones))return;
+  const hoyStr=hoy();
+  const vencenHoy=cauciones.filter(c=>c.fecha_vencimiento===hoyStr);
+  const vencenProximos=cauciones.filter(c=>{const d=diasHasta(c.fecha_vencimiento);return d>0&&d<=3;});
+  const banner=document.getElementById('alert-vencimientos');
+  if(!vencenHoy.length&&!vencenProximos.length){banner.innerHTML='';return;}
+  let html='<div class="alert-banner"><h3>⚠ Vencimientos</h3><ul>';
+  vencenHoy.forEach(c=>{
+    const nom=c.comitentes?.nombre||'';
+    html+=`<li><span>${nom} — ${fmtUSD(c.monto_usd)} vence <strong>HOY</strong></span>
+      <span style="display:flex;gap:6px;">
+        <button class="btn btn-sm btn-warning" onclick="abrirRenovar('${c.id}',${c.monto_usd},'${c.fecha_vencimiento}','${nom}')">Renovar</button>
+        <button class="btn btn-sm btn-danger" onclick="cerrarCaucion('${c.id}')">Cerrar</button>
+      </span></li>`;
+  });
+  vencenProximos.forEach(c=>{
+    const nom=c.comitentes?.nombre||'';
+    const d=diasHasta(c.fecha_vencimiento);
+    html+=`<li><span>${nom} — ${fmtUSD(c.monto_usd)} vence en <strong>${d} día${d!==1?'s':''}</strong> (${fmtFecha(c.fecha_vencimiento)})</span></li>`;
+  });
+  html+='</ul></div>';
+  banner.innerHTML=html;
+}
+
+// ── Cartera ───────────────────────────────────────────────────────────────────
 async function abrirCartera(id,nombre,numero,afi){
   currentComitente={id,nombre,numero,afi};
   document.getElementById('cartera-titulo').textContent=`${numero} — ${nombre}${afi?' · '+afi:''}`;
   showPage('cartera');
+  preciosList=await supaGet('precios','order=ticker.asc');
   await Promise.all([loadCartera(),loadCauciones()]);
 }
 
-// ── Cartera ───────────────────────────────────────────────────────────────────
 async function loadCartera(){
   document.getElementById('tabla-cartera').innerHTML='<tr><td colspan="8" class="empty">Cargando...</td></tr>';
   [cartera,aforos]=await Promise.all([
@@ -591,16 +724,17 @@ function renderCartera(){
   }
   let totalGarantia=0;
   tbody.innerHTML=cartera.map(a=>{
-    const p=a.precio_manual||0;
+    const p=getPrecioUSD(a.ticker)||a.precio_manual||0;
     const valor=p*a.cantidad;
     const aforoPct=getAforo(a.ticker,a.tipo);
     const garantia=valor*(aforoPct/100);
     totalGarantia+=garantia;
-    return`<tr>
-      <td><strong>${a.ticker}</strong></td>
+    const sinP=p<=0;
+    return`<tr${sinP?' class="sin-precio"':''}>
+      <td><strong>${a.ticker}</strong>${sinP?' <span class="badge-sin-precio">Sin precio</span>':''}</td>
       <td><span class="badge badge-${a.tipo}">${a.tipo}</span></td>
       <td>${Number(a.cantidad).toLocaleString('es-AR')}</td>
-      <td><input class="precio-input" type="number" value="${p>0?p.toFixed(4):''}" placeholder="0.0000" step="0.0001" onchange="actualizarPrecio('${a.id}',this.value)"></td>
+      <td style="font-size:12px;">${p>0?'U$S '+p.toFixed(4):'—'}</td>
       <td>${fmtUSD(valor)}</td>
       <td>${aforoPct}%</td>
       <td><strong>${fmtUSD(garantia)}</strong></td>
@@ -621,22 +755,36 @@ async function recalcStats(garantia){
   document.getElementById('stat-neto').className='stat-value '+(neto>=0?'neto-positivo':'neto-negativo');
 }
 
-async function actualizarPrecio(id,precio){
-  const val=parseFloat(precio);
-  await supaPatch('cartera',id,{precio_manual:val,updated_at:new Date().toISOString()});
-  cartera=cartera.map(a=>a.id===id?{...a,precio_manual:val}:a);
-  renderCartera();toast('Precio actualizado');
+// Modal agregar activo — selector de ticker desde tabla precios
+async function openModalNuevoActivo(){
+  preciosList=await supaGet('precios','order=ticker.asc');
+  const sel=document.getElementById('na-ticker-sel');
+  sel.innerHTML='<option value="">— Seleccioná un ticker —</option>'+
+    (Array.isArray(preciosList)?preciosList.map(p=>`<option value="${p.ticker}" data-tipo="${p.tipo}">${p.ticker} — ${p.tipo}${p.precio_usd>0?' (U$S '+parseFloat(p.precio_usd).toFixed(4)+')':' ⚠ Sin precio'}</option>`).join(''):'');
+  document.getElementById('na-precio-preview').textContent='';
+  document.getElementById('na-cantidad').value='';
+  openModal('nuevo-activo');
 }
 
+document.getElementById('na-ticker-sel').addEventListener('change',function(){
+  const ticker=this.value;
+  const p=preciosList.find(x=>x.ticker===ticker);
+  const prev=document.getElementById('na-precio-preview');
+  if(p&&p.precio_usd>0)prev.textContent=`Precio actual: U$S ${parseFloat(p.precio_usd).toFixed(4)}`;
+  else if(p)prev.textContent='⚠ Este ticker no tiene precio cargado aún';
+  else prev.textContent='';
+});
+
 async function agregarActivo(){
-  const ticker=document.getElementById('na-ticker').value.trim().toUpperCase();
-  const tipo=document.getElementById('na-tipo').value;
+  const ticker=document.getElementById('na-ticker-sel').value;
+  const sel=document.getElementById('na-ticker-sel');
+  const tipo=sel.options[sel.selectedIndex]?.dataset?.tipo||'accion';
   const cantidad=parseFloat(document.getElementById('na-cantidad').value);
   const err=document.getElementById('na-error');
-  if(!ticker||!cantidad){err.textContent='Ticker y cantidad requeridos';err.style.display='block';return;}
+  if(!ticker||!cantidad){err.textContent='Seleccioná un ticker e ingresá la cantidad';err.style.display='block';return;}
   err.style.display='none';
-  await supaPost('cartera',{comitente_id:currentComitente.id,ticker,tipo,cantidad,precio_manual:0});
-  document.getElementById('na-ticker').value='';
+  const pUSD=getPrecioUSD(ticker);
+  await supaPost('cartera',{comitente_id:currentComitente.id,ticker,tipo,cantidad,precio_manual:pUSD});
   document.getElementById('na-cantidad').value='';
   closeModal('nuevo-activo');toast('Activo agregado');await loadCartera();
 }
@@ -654,15 +802,10 @@ async function loadCauciones(){
 
 function renderCauciones(list){
   const tbody=document.getElementById('tabla-cauciones');
-  if(!Array.isArray(list)||!list.length){
-    tbody.innerHTML='<tr><td colspan="6" class="empty">Sin cauciones activas.</td></tr>';return;
-  }
+  if(!Array.isArray(list)||!list.length){tbody.innerHTML='<tr><td colspan="6" class="empty">Sin cauciones activas.</td></tr>';return;}
   tbody.innerHTML=list.map(c=>{
     const d=diasHasta(c.fecha_vencimiento);
-    let estado='';
-    if(d<=0)estado='<span class="badge-vence-hoy">Vence hoy</span>';
-    else if(d<=3)estado=`<span class="badge-vence-pronto">Vence en ${d}d</span>`;
-    else estado=`<span style="font-size:12px;color:#888;">En ${d} días</span>`;
+    let estado=d<=0?'<span class="badge-vence-hoy">Vence hoy</span>':d<=3?`<span class="badge-vence-pronto">En ${d}d</span>`:`<span style="font-size:12px;color:#888;">En ${d} días</span>`;
     return`<tr>
       <td><strong>${fmtUSD(c.monto_usd)}</strong></td>
       <td>${fmtFecha(c.fecha_inicio)}</td>
@@ -677,16 +820,13 @@ function renderCauciones(list){
   }).join('');
 }
 
-// Nueva caución - preview vencimiento
 document.getElementById('cau-dias').addEventListener('input',()=>{
-  const fecha=document.getElementById('cau-fecha').value;
-  const dias=document.getElementById('cau-dias').value;
-  if(fecha&&dias)document.getElementById('cau-vencimiento').textContent='Vence: '+fmtFecha(addDias(fecha,dias));
+  const f=document.getElementById('cau-fecha').value,d=document.getElementById('cau-dias').value;
+  if(f&&d)document.getElementById('cau-vencimiento').textContent='Vence: '+fmtFecha(addDias(f,d));
 });
 document.getElementById('cau-fecha').addEventListener('input',()=>{
-  const fecha=document.getElementById('cau-fecha').value;
-  const dias=document.getElementById('cau-dias').value;
-  if(fecha&&dias)document.getElementById('cau-vencimiento').textContent='Vence: '+fmtFecha(addDias(fecha,dias));
+  const f=document.getElementById('cau-fecha').value,d=document.getElementById('cau-dias').value;
+  if(f&&d)document.getElementById('cau-vencimiento').textContent='Vence: '+fmtFecha(addDias(f,d));
 });
 
 async function crearCaucion(){
@@ -697,7 +837,7 @@ async function crearCaucion(){
   if(!monto||!fecha||!dias){err.textContent='Completá todos los campos';err.style.display='block';return;}
   err.style.display='none';
   await supaPost('cauciones',{comitente_id:currentComitente.id,monto_usd:monto,fecha_inicio:fecha,dias,activa:true});
-  ['cau-monto','cau-fecha','cau-dias'].forEach(id=>document.getElementById(id).value='');
+  ['cau-monto','cau-dias'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('cau-vencimiento').textContent='';
   closeModal('nueva-caucion');toast('Caución registrada');
   await Promise.all([loadCauciones(),loadCartera()]);
@@ -713,8 +853,8 @@ function abrirRenovar(id,monto,fechaVenc,nombre){
 }
 
 document.getElementById('ren-dias').addEventListener('input',()=>{
-  const dias=document.getElementById('ren-dias').value;
-  if(dias){const nuevaFecha=addDias(hoy(),dias);document.getElementById('ren-nueva-fecha').textContent='Nueva fecha de vencimiento: '+fmtFecha(nuevaFecha);}
+  const d=document.getElementById('ren-dias').value;
+  if(d)document.getElementById('ren-nueva-fecha').textContent='Nueva fecha: '+fmtFecha(addDias(hoy(),d));
 });
 
 async function renovarCaucion(){
@@ -722,7 +862,6 @@ async function renovarCaucion(){
   const monto=parseFloat(document.getElementById('ren-monto').value);
   const dias=parseInt(document.getElementById('ren-dias').value);
   if(!dias){toast('Ingresá el plazo');return;}
-  // Cerrar la vieja y crear la nueva
   await supaPatch('cauciones',id,{activa:false});
   await supaPost('cauciones',{comitente_id:currentComitente.id,monto_usd:monto,fecha_inicio:hoy(),dias,activa:true});
   closeModal('renovar-caucion');toast('Caución renovada');
@@ -730,11 +869,11 @@ async function renovarCaucion(){
 }
 
 async function cerrarCaucion(id){
-  if(!confirm('¿Cerrar esta caución? Esto la marcará como saldada.'))return;
+  if(!confirm('¿Cerrar esta caución?'))return;
   await supaPatch('cauciones',id,{activa:false});
   toast('Caución cerrada');
   if(currentComitente)await Promise.all([loadCauciones(),loadCartera()]);
-  await Promise.all([loadComitentes(),checkVencimientos()]);
+  loadComitentes();checkVencimientos();
 }
 
 // ── Aforos ────────────────────────────────────────────────────────────────────
@@ -768,8 +907,14 @@ async function crearAforo(){
 async function actualizarAforo(id,pct){await supaPatch('aforos',id,{porcentaje:parseFloat(pct),updated_at:new Date().toISOString()});toast('Aforo actualizado');}
 async function eliminarAforo(id){if(!confirm('¿Eliminar?'))return;await supaDelete('aforos',id);toast('Eliminado');loadAforos();}
 
-// Setear fecha de hoy por defecto en modal caución
+// Init
 document.getElementById('cau-fecha').value=hoy();
+// Sobrescribir openModal para nuevo-activo
+const origOpenModal=openModal;
+window.openModal=function(id){
+  if(id==='nuevo-activo'){openModalNuevoActivo();return;}
+  origOpenModal(id);
+};
 
 loadComitentes();
 </script>
