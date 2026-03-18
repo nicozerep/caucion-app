@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Caución USD — Gestión de garantías</title>
+<title>Caución USD</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f3; color: #1a1a1a; }
@@ -19,7 +19,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .main { flex: 1; overflow-y: auto; padding: 28px 32px; }
 .page { display: none; }
 .page.active { display: block; }
-.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
 .page-title { font-size: 18px; font-weight: 600; }
 .btn { padding: 7px 14px; border-radius: 8px; border: 1px solid #ddd; background: #fff; font-size: 13px; cursor: pointer; color: #1a1a1a; transition: background 0.1s; font-family: inherit; }
 .btn:hover { background: #f5f5f3; }
@@ -27,18 +27,21 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .btn-primary:hover { background: #333; }
 .btn-danger { color: #c0392b; border-color: #f5c6c2; }
 .btn-danger:hover { background: #fff5f5; }
+.btn-success { color: #1a7a4a; border-color: #b7e0c8; }
+.btn-success:hover { background: #f0faf4; }
+.btn-warning { color: #7a5a00; border-color: #f5d98a; }
+.btn-warning:hover { background: #fffbf0; }
 .btn-sm { padding: 4px 10px; font-size: 12px; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .card { background: #fff; border: 1px solid #e5e5e3; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; }
-.filters-row { display: flex; gap: 10px; margin-bottom: 16px; }
-.search-box { flex: 1; padding: 9px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; background: #fff; color: #1a1a1a; font-family: inherit; outline: none; }
+.filters-row { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; flex-wrap: wrap; }
+.search-box { flex: 1; min-width: 180px; padding: 9px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; background: #fff; color: #1a1a1a; font-family: inherit; outline: none; }
 .search-box:focus { border-color: #aaa; }
 .filter-select { padding: 9px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; background: #fff; color: #1a1a1a; font-family: inherit; outline: none; min-width: 180px; cursor: pointer; }
-.filter-select:focus { border-color: #aaa; }
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
-th { text-align: left; padding: 9px 14px; color: #888; font-weight: 500; border-bottom: 1px solid #e5e5e3; font-size: 12px; }
-td { padding: 11px 14px; border-bottom: 1px solid #f0f0ee; color: #1a1a1a; vertical-align: middle; }
+th { text-align: left; padding: 9px 14px; color: #888; font-weight: 500; border-bottom: 1px solid #e5e5e3; font-size: 12px; white-space: nowrap; }
+td { padding: 10px 14px; border-bottom: 1px solid #f0f0ee; color: #1a1a1a; vertical-align: middle; }
 tr:last-child td { border-bottom: none; }
 tr:hover td { background: #fafaf8; }
 .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 500; }
@@ -48,9 +51,11 @@ tr:hover td { background: #fafaf8; }
 .badge-on { background: #EEEDFE; color: #3C3489; }
 .badge-fci { background: #FAECE7; color: #712B13; }
 .badge-afi { background: #f0f0ee; color: #555; font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+.badge-vence-hoy { background: #FCEBEB; color: #A32D2D; font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
+.badge-vence-pronto { background: #FAEEDA; color: #633806; font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 100; align-items: center; justify-content: center; }
 .modal-overlay.open { display: flex; }
-.modal { background: #fff; border-radius: 12px; padding: 24px; width: 420px; max-width: 95vw; border: 1px solid #ddd; box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
+.modal { background: #fff; border-radius: 12px; padding: 24px; width: 440px; max-width: 95vw; border: 1px solid #ddd; box-shadow: 0 8px 32px rgba(0,0,0,0.12); max-height: 90vh; overflow-y: auto; }
 .modal h2 { font-size: 16px; font-weight: 600; margin-bottom: 18px; }
 .form-group { margin-bottom: 14px; }
 .form-group label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 500; }
@@ -60,7 +65,7 @@ tr:hover td { background: #fafaf8; }
 .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
 .stat-card { background: #f5f5f3; border-radius: 8px; padding: 14px 16px; }
 .stat-label { font-size: 12px; color: #888; margin-bottom: 6px; }
-.stat-value { font-size: 22px; font-weight: 600; color: #1a1a1a; }
+.stat-value { font-size: 20px; font-weight: 600; color: #1a1a1a; }
 .stat-sub { font-size: 11px; color: #aaa; margin-top: 2px; }
 .empty { text-align: center; padding: 40px; color: #aaa; font-size: 13px; }
 .comitente-link { color: #185FA5; cursor: pointer; font-weight: 500; }
@@ -69,11 +74,18 @@ tr:hover td { background: #fafaf8; }
 .back-btn:hover { color: #1a1a1a; }
 .error-msg { color: #c0392b; font-size: 13px; padding: 8px 12px; background: #fff5f5; border-radius: 8px; margin-bottom: 12px; border: 1px solid #f5c6c2; }
 .precio-input { padding: 5px 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; background: #fff; color: #1a1a1a; font-family: inherit; outline: none; width: 110px; }
-.precio-input:focus { border-color: #aaa; }
-.update-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding: 10px 14px; background: #fff; border: 1px solid #e5e5e3; border-radius: 8px; }
-.update-bar span { font-size: 12px; color: #888; flex: 1; }
+.update-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding: 10px 14px; background: #fff; border: 1px solid #e5e5e3; border-radius: 8px; flex-wrap: wrap; }
+.update-bar span { font-size: 12px; color: #888; flex: 1; min-width: 200px; }
 .toast { position: fixed; bottom: 24px; right: 24px; background: #1a1a1a; color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 13px; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
 .toast.show { opacity: 1; }
+.alert-banner { background: #FCEBEB; border: 1px solid #f7c1c1; border-radius: 10px; padding: 14px 18px; margin-bottom: 18px; }
+.alert-banner h3 { font-size: 13px; font-weight: 600; color: #A32D2D; margin-bottom: 8px; }
+.alert-banner ul { list-style: none; }
+.alert-banner li { font-size: 13px; color: #791F1F; padding: 4px 0; border-bottom: 1px solid #f7c1c1; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.alert-banner li:last-child { border-bottom: none; }
+.neto-positivo { color: #1a7a4a; font-weight: 600; }
+.neto-negativo { color: #c0392b; font-weight: 600; }
+.section-title { font-size: 14px; font-weight: 600; margin: 20px 0 10px; color: #1a1a1a; }
 </style>
 </head>
 <body>
@@ -96,11 +108,19 @@ tr:hover td { background: #fafaf8; }
   </div>
 
   <div class="main">
-    <!-- Comitentes -->
+
+    <!-- COMITENTES -->
     <div class="page active" id="page-comitentes">
+      <div id="alert-vencimientos"></div>
       <div class="page-header">
         <span class="page-title">Comitentes</span>
-        <button class="btn btn-primary" onclick="openModal('nuevo-comitente')">+ Nuevo comitente</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn" id="btn-actualizar-global" onclick="actualizarPreciosGlobal()">↻ Actualizar precios</button>
+          <button class="btn btn-primary" onclick="openModal('nuevo-comitente')">+ Nuevo comitente</button>
+        </div>
+      </div>
+      <div class="update-bar">
+        <span id="update-status-global">Presioná "Actualizar precios" para traer los cierres del día.</span>
       </div>
       <div class="filters-row">
         <input class="search-box" placeholder="Buscar por nombre o número..." oninput="aplicarFiltros()">
@@ -111,43 +131,51 @@ tr:hover td { background: #fafaf8; }
       <div class="card" style="padding:0;">
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Número</th><th>Nombre</th><th>AFI</th><th>Activos</th><th>Garantía (USD)</th><th></th></tr></thead>
-            <tbody id="tabla-comitentes"><tr><td colspan="6" class="empty">Cargando...</td></tr></tbody>
+            <thead>
+              <tr>
+                <th>Número</th>
+                <th>Nombre</th>
+                <th>AFI</th>
+                <th>Garantía disponible</th>
+                <th>Tomado</th>
+                <th>Disponible neto</th>
+                <th>Próx. vencimiento</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tabla-comitentes"><tr><td colspan="8" class="empty">Cargando...</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- Cartera -->
+    <!-- CARTERA -->
     <div class="page" id="page-cartera">
       <div class="back-btn" onclick="showPage('comitentes')">← Volver a comitentes</div>
       <div class="page-header">
         <span class="page-title" id="cartera-titulo">Cartera</span>
-        <div style="display:flex;gap:8px;">
-          <button class="btn" id="btn-actualizar" onclick="actualizarPrecios()">↻ Actualizar precios</button>
-          <button class="btn btn-primary" onclick="openModal('nuevo-activo')">+ Agregar activo</button>
-        </div>
+        <button class="btn btn-primary" onclick="openModal('nuevo-activo')">+ Agregar activo</button>
       </div>
-      <div class="update-bar">
-        <span id="ultimo-update">Presioná "Actualizar precios" para traer los precios de data912.</span>
-      </div>
+
       <div class="stat-row">
-        <div class="stat-card">
-          <div class="stat-label">Valor total cartera</div>
-          <div class="stat-value" id="stat-total">U$S 0</div>
-          <div class="stat-sub" id="stat-mep">—</div>
-        </div>
         <div class="stat-card">
           <div class="stat-label">Garantía disponible</div>
           <div class="stat-value" id="stat-garantia">U$S 0</div>
-          <div class="stat-sub">aplicando aforos</div>
+          <div class="stat-sub" id="stat-mep">—</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Caución USD posible</div>
-          <div class="stat-value" id="stat-caucion">U$S 0</div>
-          <div class="stat-sub">monto máximo</div>
+          <div class="stat-label">Tomado actualmente</div>
+          <div class="stat-value" id="stat-tomado">U$S 0</div>
+          <div class="stat-sub">cauciones activas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Disponible neto</div>
+          <div class="stat-value" id="stat-neto">U$S 0</div>
+          <div class="stat-sub">para tomar</div>
         </div>
       </div>
+
+      <p class="section-title">Activos en cartera</p>
       <div class="card" style="padding:0;">
         <div class="table-wrap">
           <table>
@@ -156,15 +184,28 @@ tr:hover td { background: #fafaf8; }
           </table>
         </div>
       </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:20px 0 10px;">
+        <p class="section-title" style="margin:0;">Cauciones activas</p>
+        <button class="btn btn-primary btn-sm" onclick="openModal('nueva-caucion')">+ Nueva caución</button>
+      </div>
+      <div class="card" style="padding:0;">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Monto USD</th><th>Fecha inicio</th><th>Días</th><th>Vencimiento</th><th>Estado</th><th></th></tr></thead>
+            <tbody id="tabla-cauciones"><tr><td colspan="6" class="empty">Sin cauciones activas</td></tr></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
-    <!-- Aforos -->
+    <!-- AFOROS -->
     <div class="page" id="page-aforos">
       <div class="page-header">
         <span class="page-title">Tabla de aforos</span>
         <button class="btn btn-primary" onclick="openModal('nuevo-aforo')">+ Agregar aforo</button>
       </div>
-      <input class="search-box" placeholder="Buscar ticker..." oninput="filtrarAforos(this.value)" style="margin-bottom:16px;">
+      <input class="search-box" placeholder="Buscar ticker..." oninput="filtrarAforos(this.value)" style="margin-bottom:16px;width:100%;">
       <div class="card" style="padding:0;">
         <div class="table-wrap">
           <table>
@@ -174,6 +215,7 @@ tr:hover td { background: #fafaf8; }
         </div>
       </div>
     </div>
+
   </div>
 </div>
 
@@ -183,7 +225,7 @@ tr:hover td { background: #fafaf8; }
     <h2>Nuevo comitente</h2>
     <div class="form-group"><label>Número</label><input id="nc-numero" placeholder="ej: 10234"></div>
     <div class="form-group"><label>Nombre</label><input id="nc-nombre" placeholder="Apellido, Nombre o Razón Social"></div>
-    <div class="form-group"><label>AFI (asesor externo)</label><input id="nc-afi" placeholder="Nombre del asesor"></div>
+    <div class="form-group"><label>AFI</label><input id="nc-afi" placeholder="Nombre del asesor externo"></div>
     <div id="nc-error" class="error-msg" style="display:none;"></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('nuevo-comitente')">Cancelar</button>
@@ -197,13 +239,13 @@ tr:hover td { background: #fafaf8; }
   <div class="modal">
     <h2>Editar comitente</h2>
     <input type="hidden" id="ec-id">
-    <div class="form-group"><label>Número</label><input id="ec-numero" placeholder="ej: 10234"></div>
-    <div class="form-group"><label>Nombre</label><input id="ec-nombre" placeholder="Apellido, Nombre o Razón Social"></div>
-    <div class="form-group"><label>AFI (asesor externo)</label><input id="ec-afi" placeholder="Nombre del asesor"></div>
+    <div class="form-group"><label>Número</label><input id="ec-numero"></div>
+    <div class="form-group"><label>Nombre</label><input id="ec-nombre"></div>
+    <div class="form-group"><label>AFI</label><input id="ec-afi"></div>
     <div id="ec-error" class="error-msg" style="display:none;"></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('editar-comitente')">Cancelar</button>
-      <button class="btn btn-primary" onclick="guardarEdicionComitente()">Guardar</button>
+      <button class="btn btn-primary" onclick="guardarEdicion()">Guardar</button>
     </div>
   </div>
 </div>
@@ -231,6 +273,38 @@ tr:hover td { background: #fafaf8; }
   </div>
 </div>
 
+<!-- Modal: Nueva caución -->
+<div class="modal-overlay" id="modal-nueva-caucion">
+  <div class="modal">
+    <h2>Nueva caución</h2>
+    <div class="form-group"><label>Monto (USD)</label><input id="cau-monto" type="number" placeholder="0.00" step="0.01"></div>
+    <div class="form-group"><label>Fecha de inicio</label><input id="cau-fecha" type="date"></div>
+    <div class="form-group"><label>Plazo (días)</label><input id="cau-dias" type="number" placeholder="ej: 7, 14, 30"></div>
+    <div id="cau-vencimiento" style="font-size:12px;color:#888;margin-top:-8px;margin-bottom:12px;"></div>
+    <div id="cau-error" class="error-msg" style="display:none;"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('nueva-caucion')">Cancelar</button>
+      <button class="btn btn-primary" onclick="crearCaucion()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Renovar caución -->
+<div class="modal-overlay" id="modal-renovar-caucion">
+  <div class="modal">
+    <h2>Renovar caución</h2>
+    <input type="hidden" id="ren-id">
+    <input type="hidden" id="ren-monto">
+    <div style="font-size:13px;color:#666;margin-bottom:16px;" id="ren-info"></div>
+    <div class="form-group"><label>Nuevo plazo (días)</label><input id="ren-dias" type="number" placeholder="ej: 7, 14, 30"></div>
+    <div id="ren-nueva-fecha" style="font-size:12px;color:#888;margin-top:-8px;margin-bottom:12px;"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('renovar-caucion')">Cancelar</button>
+      <button class="btn btn-primary" onclick="renovarCaucion()">Renovar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: Nuevo aforo -->
 <div class="modal-overlay" id="modal-nuevo-aforo">
   <div class="modal">
@@ -245,7 +319,7 @@ tr:hover td { background: #fafaf8; }
         <option value="fci">FCI</option>
       </select>
     </div>
-    <div class="form-group"><label>Porcentaje (%)</label><input id="af-porcentaje" type="number" min="0" max="100" placeholder="70"></div>
+    <div class="form-group"><label>Porcentaje (%)</label><input id="af-porcentaje" type="number" min="0" max="100" placeholder="72"></div>
     <div id="af-error" class="error-msg" style="display:none;"></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('nuevo-aforo')">Cancelar</button>
@@ -259,258 +333,270 @@ tr:hover td { background: #fafaf8; }
 <script>
 const SUPA_URL = 'https://gfektpqyywvofnvoxdio.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmZWt0cHF5eXd2b2Zudm94ZGlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NDIwMDMsImV4cCI6MjA4OTQxODAwM30.jFL-u7JSDVdUUeKZHLLytrhtgbeugwDO4is9Zb2qNSw';
+const hdrs = { 'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'return=representation' };
 
-const hdrs = {
-  'Content-Type': 'application/json',
-  'apikey': SUPA_KEY,
-  'Authorization': 'Bearer ' + SUPA_KEY,
-  'Prefer': 'return=representation'
-};
+async function supaGet(t,p=''){return(await fetch(`${SUPA_URL}/rest/v1/${t}?${p}`,{headers:hdrs})).json();}
+async function supaPost(t,b){return(await fetch(`${SUPA_URL}/rest/v1/${t}`,{method:'POST',headers:hdrs,body:JSON.stringify(b)})).json();}
+async function supaPatch(t,id,b){return(await fetch(`${SUPA_URL}/rest/v1/${t}?id=eq.${id}`,{method:'PATCH',headers:hdrs,body:JSON.stringify(b)})).json();}
+async function supaDelete(t,id){await fetch(`${SUPA_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE',headers:hdrs});}
 
-async function supaGet(t, p='') { return (await fetch(`${SUPA_URL}/rest/v1/${t}?${p}`, { headers: hdrs })).json(); }
-async function supaPost(t, b) { return (await fetch(`${SUPA_URL}/rest/v1/${t}`, { method:'POST', headers: hdrs, body: JSON.stringify(b) })).json(); }
-async function supaPatch(t, id, b) { return (await fetch(`${SUPA_URL}/rest/v1/${t}?id=eq.${id}`, { method:'PATCH', headers: hdrs, body: JSON.stringify(b) })).json(); }
-async function supaDelete(t, id) { await fetch(`${SUPA_URL}/rest/v1/${t}?id=eq.${id}`, { method:'DELETE', headers: hdrs }); }
+let currentComitente=null, comitentes=[], cartera=[], aforos=[], aforosAll=[], comitentesData=[];
+let mepActual=null, preciosGlobal={};
 
-let currentComitente = null;
-let comitentes = [], cartera = [], aforos = [], aforosAll = [];
-let mepActual = null;
-let comitentesData = []; // cache con carteras para filtros
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+function fmtUSD(n){return'U$S '+Number(n).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
+function showPage(p){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('.nav-item')[p==='aforos'?1:0].classList.add('active');
+  if(p==='comitentes') loadComitentes();
+  if(p==='aforos') loadAforos();
 }
 
-function fmtUSD(n) {
-  return 'U$S ' + Number(n).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function openModal(id){document.getElementById('modal-'+id).classList.add('open');}
+function closeModal(id){document.getElementById('modal-'+id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});});
+
+function getAforo(ticker,tipo){
+  if(!Array.isArray(aforos))return 72;
+  const byT=aforos.find(a=>a.ticker.toUpperCase()===ticker.toUpperCase());
+  if(byT)return byT.porcentaje;
+  const byTipo=aforos.find(a=>a.ticker.toUpperCase()===tipo.toUpperCase());
+  if(byTipo)return byTipo.porcentaje;
+  return 72;
 }
 
-function showPage(p) {
-  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  document.getElementById('page-' + p).classList.add('active');
-  document.querySelectorAll('.nav-item')[p === 'aforos' ? 1 : 0].classList.add('active');
-  if (p === 'comitentes') loadComitentes();
-  if (p === 'aforos') loadAforos();
+// ── Fechas ────────────────────────────────────────────────────────────────────
+function hoy(){return new Date().toISOString().split('T')[0];}
+function addDias(fecha,dias){const d=new Date(fecha);d.setDate(d.getDate()+parseInt(dias));return d.toISOString().split('T')[0];}
+function fmtFecha(f){if(!f)return'—';const[y,m,d]=f.split('-');return`${d}/${m}/${y}`;}
+function diasHasta(f){
+  const hoyD=new Date(); hoyD.setHours(0,0,0,0);
+  const fD=new Date(f+'T00:00:00');
+  return Math.round((fD-hoyD)/(1000*60*60*24));
 }
 
-function openModal(id) { document.getElementById('modal-' + id).classList.add('open'); }
-function closeModal(id) { document.getElementById('modal-' + id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(el => {
-  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
-});
-
-function getAforo(ticker, tipo) {
-  if (!Array.isArray(aforos)) return 50;
-  const byT = aforos.find(a => a.ticker.toUpperCase() === ticker.toUpperCase());
-  if (byT) return byT.porcentaje;
-  const byTipo = aforos.find(a => a.ticker.toUpperCase() === tipo.toUpperCase());
-  if (byTipo) return byTipo.porcentaje;
-  return 50;
-}
-
-// ── Filtros comitentes ───────────────────────────────────────────────────────
-function actualizarFiltroAFI() {
-  const sel = document.getElementById('filtro-afi');
-  const actual = sel.value;
-  const afis = [...new Set(comitentes.map(c => c.afi || '').filter(a => a.trim()))].sort();
-  sel.innerHTML = '<option value="">Todos los AFIs</option>' +
-    afis.map(a => `<option value="${a}" ${a === actual ? 'selected' : ''}>${a}</option>`).join('');
-}
-
-function aplicarFiltros() {
-  const q = document.querySelector('.filters-row .search-box').value.toLowerCase();
-  const afiSel = document.getElementById('filtro-afi').value;
-  const filtrados = comitentesData.filter(({ c }) => {
-    const matchQ = !q || c.nombre.toLowerCase().includes(q) || c.numero.includes(q);
-    const matchAfi = !afiSel || (c.afi || '') === afiSel;
-    return matchQ && matchAfi;
+// ── Alerta vencimientos ───────────────────────────────────────────────────────
+async function checkVencimientos(){
+  const cauciones=await supaGet('cauciones','activa=eq.true&select=*,comitentes(nombre,numero)');
+  if(!Array.isArray(cauciones))return;
+  const hoyStr=hoy();
+  const vencenHoy=cauciones.filter(c=>c.fecha_vencimiento===hoyStr);
+  const vencenProximos=cauciones.filter(c=>{const d=diasHasta(c.fecha_vencimiento);return d>0&&d<=3;});
+  const banner=document.getElementById('alert-vencimientos');
+  if(!vencenHoy.length&&!vencenProximos.length){banner.innerHTML='';return;}
+  let html='<div class="alert-banner"><h3>⚠ Vencimientos</h3><ul>';
+  vencenHoy.forEach(c=>{
+    const nom=c.comitentes?.nombre||'';
+    html+=`<li><span>${nom} — ${fmtUSD(c.monto_usd)} vence <strong>HOY</strong></span>
+      <span style="display:flex;gap:6px;">
+        <button class="btn btn-sm btn-warning" onclick="abrirRenovar('${c.id}',${c.monto_usd},'${c.fecha_vencimiento}','${nom}')">Renovar</button>
+        <button class="btn btn-sm btn-danger" onclick="cerrarCaucion('${c.id}')">Cerrar</button>
+      </span></li>`;
   });
-  renderTablaComitentes(filtrados);
+  vencenProximos.forEach(c=>{
+    const nom=c.comitentes?.nombre||'';
+    const d=diasHasta(c.fecha_vencimiento);
+    html+=`<li><span>${nom} — ${fmtUSD(c.monto_usd)} vence en <strong>${d} día${d!==1?'s':''}</strong> (${fmtFecha(c.fecha_vencimiento)})</span></li>`;
+  });
+  html+='</ul></div>';
+  banner.innerHTML=html;
 }
 
-function renderTablaComitentes(list) {
-  const tbody = document.getElementById('tabla-comitentes');
-  if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty">Sin resultados</td></tr>'; return;
+// ── Actualizar precios global ─────────────────────────────────────────────────
+async function actualizarPreciosGlobal(){
+  const btn=document.getElementById('btn-actualizar-global');
+  btn.disabled=true; btn.textContent='Actualizando...';
+  document.getElementById('update-status-global').textContent='Conectando con data912...';
+
+  let mep=null; preciosGlobal={};
+  try{
+    const[resMep,resStocks,resCedears,resBonos]=await Promise.all([
+      fetch('https://data912.com/live/mep').then(r=>r.json()),
+      fetch('https://data912.com/live/arg_stocks').then(r=>r.json()),
+      fetch('https://data912.com/live/cedears').then(r=>r.json()).catch(()=>[]),
+      fetch('https://data912.com/live/bonds').then(r=>r.json()).catch(()=>[])
+    ]);
+    if(resMep&&resMep.c)mep=parseFloat(resMep.c);
+    else if(Array.isArray(resMep)&&resMep[0]?.c)mep=parseFloat(resMep[0].c);
+    if(!mep||mep<=0){const dm=await fetch('https://dolarapi.com/v1/dolares/bolsa').then(r=>r.json()).catch(()=>null);if(dm&&dm.venta)mep=dm.venta;}
+    const mapear=(arr)=>{if(!Array.isArray(arr))return;arr.forEach(item=>{const sym=(item.symbol||item.ticker||'').toUpperCase();const precio=parseFloat(item.c||item.price||item.ultimo||0);if(sym&&precio>0)preciosGlobal[sym]=precio;});};
+    mapear(resStocks);mapear(resCedears);mapear(resBonos);
+  }catch(e){
+    document.getElementById('update-status-global').textContent='Error: '+e.message;
+    btn.disabled=false;btn.textContent='↻ Actualizar precios';return;
   }
-  tbody.innerHTML = list.map(({ c, garantia, nActivos }) => `<tr>
-    <td style="color:#888;">${c.numero}</td>
-    <td><span class="comitente-link" onclick="abrirCartera('${c.id}','${c.nombre.replace(/'/g,"\\'")}','${c.numero}','${(c.afi||'').replace(/'/g,"\\'")}')"> ${c.nombre}</span></td>
-    <td>${c.afi ? `<span class="badge-afi">${c.afi}</span>` : '<span style="color:#ccc;font-size:12px;">—</span>'}</td>
-    <td>${nActivos}</td>
-    <td><strong>${fmtUSD(garantia)}</strong></td>
-    <td style="display:flex;gap:6px;">
-      <button class="btn btn-sm" onclick="abrirEdicion('${c.id}','${c.numero}','${c.nombre.replace(/'/g,"\\'")}','${(c.afi||'').replace(/'/g,"\\'")}')">Editar</button>
-      <button class="btn btn-sm btn-danger" onclick="eliminarComitente('${c.id}')">Eliminar</button>
-    </td>
-  </tr>`).join('');
+
+  if(!mep||mep<=0){
+    document.getElementById('update-status-global').textContent='No se pudo obtener el MEP.';
+    btn.disabled=false;btn.textContent='↻ Actualizar precios';return;
+  }
+  mepActual=mep;
+
+  // Actualizar todos los activos de todos los comitentes
+  const todosActivos=await supaGet('cartera','select=*');
+  let actualizados=0;
+  if(Array.isArray(todosActivos)){
+    for(const activo of todosActivos){
+      const pARS=preciosGlobal[activo.ticker.toUpperCase()];
+      if(pARS&&pARS>0){
+        const pUSD=pARS/mep;
+        await supaPatch('cartera',activo.id,{precio_manual:pUSD,updated_at:new Date().toISOString()});
+        actualizados++;
+      }
+    }
+  }
+
+  const ahora=new Date().toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'});
+  document.getElementById('update-status-global').textContent=`Actualizado: ${ahora} · MEP: $${mep.toFixed(0)} · ${actualizados} activos actualizados`;
+  btn.disabled=false; btn.textContent='↻ Actualizar precios';
+  toast(`${actualizados} precios actualizados`);
+  loadComitentes();
 }
 
-// ── Comitentes ───────────────────────────────────────────────────────────────
-async function loadComitentes() {
-  const tbody = document.getElementById('tabla-comitentes');
-  tbody.innerHTML = '<tr><td colspan="6" class="empty">Cargando...</td></tr>';
-  [comitentes, aforos] = await Promise.all([supaGet('comitentes','order=nombre.asc'), supaGet('aforos')]);
-  if (!Array.isArray(comitentes) || !comitentes.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty">No hay comitentes. Creá el primero.</td></tr>';
-    return;
+// ── Comitentes ────────────────────────────────────────────────────────────────
+async function loadComitentes(){
+  const tbody=document.getElementById('tabla-comitentes');
+  tbody.innerHTML='<tr><td colspan="8" class="empty">Cargando...</td></tr>';
+  [comitentes,aforos]=await Promise.all([supaGet('comitentes','order=nombre.asc'),supaGet('aforos')]);
+  if(!Array.isArray(comitentes)||!comitentes.length){
+    tbody.innerHTML='<tr><td colspan="8" class="empty">No hay comitentes.</td></tr>';return;
   }
-  const carteras = await Promise.all(comitentes.map(c => supaGet('cartera', `comitente_id=eq.${c.id}`)));
-  comitentesData = comitentes.map((c, i) => {
-    const cart = Array.isArray(carteras[i]) ? carteras[i] : [];
-    const garantia = cart.reduce((sum, a) => sum + (a.precio_manual||0) * a.cantidad * (getAforo(a.ticker,a.tipo)/100), 0);
-    return { c, garantia, nActivos: cart.length };
+  const[carteras,cauciones]=await Promise.all([
+    Promise.all(comitentes.map(c=>supaGet('cartera',`comitente_id=eq.${c.id}`))),
+    Promise.all(comitentes.map(c=>supaGet('cauciones',`comitente_id=eq.${c.id}&activa=eq.true&order=fecha_vencimiento.asc`)))
+  ]);
+  comitentesData=comitentes.map((c,i)=>{
+    const cart=Array.isArray(carteras[i])?carteras[i]:[];
+    const caus=Array.isArray(cauciones[i])?cauciones[i]:[];
+    const garantia=cart.reduce((s,a)=>s+(a.precio_manual||0)*a.cantidad*(getAforo(a.ticker,a.tipo)/100),0);
+    const tomado=caus.reduce((s,c)=>s+parseFloat(c.monto_usd||0),0);
+    const neto=garantia-tomado;
+    const proxVenc=caus.length?caus[0].fecha_vencimiento:null;
+    return{c,garantia,tomado,neto,proxVenc,nActivos:cart.length};
   });
   actualizarFiltroAFI();
   aplicarFiltros();
+  checkVencimientos();
 }
 
-async function crearComitente() {
-  const numero = document.getElementById('nc-numero').value.trim();
-  const nombre = document.getElementById('nc-nombre').value.trim();
-  const afi = document.getElementById('nc-afi').value.trim();
-  const err = document.getElementById('nc-error');
-  if (!numero || !nombre) { err.textContent='Completá número y nombre'; err.style.display='block'; return; }
+function actualizarFiltroAFI(){
+  const sel=document.getElementById('filtro-afi');
+  const actual=sel.value;
+  const afis=[...new Set(comitentes.map(c=>c.afi||'').filter(a=>a.trim()))].sort();
+  sel.innerHTML='<option value="">Todos los AFIs</option>'+afis.map(a=>`<option value="${a}"${a===actual?' selected':''}>${a}</option>`).join('');
+}
+
+function aplicarFiltros(){
+  const q=document.querySelector('.filters-row .search-box').value.toLowerCase();
+  const afiSel=document.getElementById('filtro-afi').value;
+  const f=comitentesData.filter(({c})=>{
+    const mQ=!q||c.nombre.toLowerCase().includes(q)||c.numero.includes(q);
+    const mA=!afiSel||(c.afi||')===afiSel;
+    return mQ&&mA;
+  });
+  renderTablaComitentes(f);
+}
+
+function renderTablaComitentes(list){
+  const tbody=document.getElementById('tabla-comitentes');
+  if(!list.length){tbody.innerHTML='<tr><td colspan="8" class="empty">Sin resultados</td></tr>';return;}
+  tbody.innerHTML=list.map(({c,garantia,tomado,neto,proxVenc,nActivos})=>{
+    const netoClass=neto>=0?'neto-positivo':'neto-negativo';
+    let vencBadge='<span style="color:#ccc;font-size:12px;">—</span>';
+    if(proxVenc){
+      const d=diasHasta(proxVenc);
+      if(d<=0)vencBadge=`<span class="badge-vence-hoy">Hoy</span>`;
+      else if(d<=3)vencBadge=`<span class="badge-vence-pronto">${fmtFecha(proxVenc)}</span>`;
+      else vencBadge=`<span style="font-size:12px;">${fmtFecha(proxVenc)}</span>`;
+    }
+    return`<tr>
+      <td style="color:#888;">${c.numero}</td>
+      <td><span class="comitente-link" onclick="abrirCartera('${c.id}','${c.nombre.replace(/'/g,"\\'")}','${c.numero}','${(c.afi||'').replace(/'/g,"\\'")}')"> ${c.nombre}</span></td>
+      <td>${c.afi?`<span class="badge-afi">${c.afi}</span>`:'<span style="color:#ccc;font-size:12px;">—</span>'}</td>
+      <td>${fmtUSD(garantia)}</td>
+      <td>${tomado>0?fmtUSD(tomado):'<span style="color:#ccc;">—</span>'}</td>
+      <td><span class="${netoClass}">${fmtUSD(neto)}</span></td>
+      <td>${vencBadge}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-sm" onclick="abrirEdicion('${c.id}','${c.numero}','${c.nombre.replace(/'/g,"\\'")}','${(c.afi||'').replace(/'/g,"\\'")}')">Editar</button>
+        <button class="btn btn-sm btn-danger" onclick="eliminarComitente('${c.id}')">×</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function crearComitente(){
+  const numero=document.getElementById('nc-numero').value.trim();
+  const nombre=document.getElementById('nc-nombre').value.trim();
+  const afi=document.getElementById('nc-afi').value.trim();
+  const err=document.getElementById('nc-error');
+  if(!numero||!nombre){err.textContent='Completá número y nombre';err.style.display='block';return;}
   err.style.display='none';
-  const res = await supaPost('comitentes', { numero, nombre, afi });
-  if (!Array.isArray(res) || res[0]?.code) { err.textContent='Error: número duplicado.'; err.style.display='block'; return; }
-  document.getElementById('nc-numero').value='';
-  document.getElementById('nc-nombre').value='';
-  document.getElementById('nc-afi').value='';
-  closeModal('nuevo-comitente'); toast('Comitente creado'); loadComitentes();
+  const res=await supaPost('comitentes',{numero,nombre,afi});
+  if(!Array.isArray(res)||res[0]?.code){err.textContent='Error: número duplicado.';err.style.display='block';return;}
+  ['nc-numero','nc-nombre','nc-afi'].forEach(id=>document.getElementById(id).value='');
+  closeModal('nuevo-comitente');toast('Comitente creado');loadComitentes();
 }
 
-function abrirEdicion(id, numero, nombre, afi) {
-  document.getElementById('ec-id').value = id;
-  document.getElementById('ec-numero').value = numero;
-  document.getElementById('ec-nombre').value = nombre;
-  document.getElementById('ec-afi').value = afi;
+function abrirEdicion(id,numero,nombre,afi){
+  document.getElementById('ec-id').value=id;
+  document.getElementById('ec-numero').value=numero;
+  document.getElementById('ec-nombre').value=nombre;
+  document.getElementById('ec-afi').value=afi;
   openModal('editar-comitente');
 }
 
-async function guardarEdicionComitente() {
-  const id = document.getElementById('ec-id').value;
-  const numero = document.getElementById('ec-numero').value.trim();
-  const nombre = document.getElementById('ec-nombre').value.trim();
-  const afi = document.getElementById('ec-afi').value.trim();
-  const err = document.getElementById('ec-error');
-  if (!numero || !nombre) { err.textContent='Completá número y nombre'; err.style.display='block'; return; }
+async function guardarEdicion(){
+  const id=document.getElementById('ec-id').value;
+  const numero=document.getElementById('ec-numero').value.trim();
+  const nombre=document.getElementById('ec-nombre').value.trim();
+  const afi=document.getElementById('ec-afi').value.trim();
+  const err=document.getElementById('ec-error');
+  if(!numero||!nombre){err.textContent='Completá número y nombre';err.style.display='block';return;}
   err.style.display='none';
-  await supaPatch('comitentes', id, { numero, nombre, afi });
-  closeModal('editar-comitente'); toast('Comitente actualizado'); loadComitentes();
+  await supaPatch('comitentes',id,{numero,nombre,afi});
+  closeModal('editar-comitente');toast('Actualizado');loadComitentes();
 }
 
-async function eliminarComitente(id) {
-  if (!confirm('¿Eliminar este comitente y toda su cartera?')) return;
-  await supaDelete('comitentes', id); toast('Eliminado'); loadComitentes();
+async function eliminarComitente(id){
+  if(!confirm('¿Eliminar este comitente y toda su cartera?'))return;
+  await supaDelete('comitentes',id);toast('Eliminado');loadComitentes();
 }
 
-async function abrirCartera(id, nombre, numero, afi) {
-  currentComitente = { id, nombre, numero, afi };
-  document.getElementById('cartera-titulo').textContent = `${numero} — ${nombre}${afi ? ' · ' + afi : ''}`;
+async function abrirCartera(id,nombre,numero,afi){
+  currentComitente={id,nombre,numero,afi};
+  document.getElementById('cartera-titulo').textContent=`${numero} — ${nombre}${afi?' · '+afi:''}`;
   showPage('cartera');
-  await loadCartera();
-}
-
-// ── data912 ──────────────────────────────────────────────────────────────────
-async function actualizarPrecios() {
-  if (!cartera || cartera.length === 0) { toast('No hay activos en cartera'); return; }
-  const btn = document.getElementById('btn-actualizar');
-  btn.disabled = true; btn.textContent = 'Actualizando...';
-  document.getElementById('ultimo-update').textContent = 'Conectando con data912...';
-
-  let mep = null, precios = {};
-
-  try {
-    const [resMep, resStocks, resCedears, resBonos] = await Promise.all([
-      fetch('https://data912.com/live/mep').then(r => r.json()),
-      fetch('https://data912.com/live/arg_stocks').then(r => r.json()),
-      fetch('https://data912.com/live/cedears').then(r => r.json()).catch(() => []),
-      fetch('https://data912.com/live/bonds').then(r => r.json()).catch(() => [])
-    ]);
-
-    if (resMep && resMep.c) mep = parseFloat(resMep.c);
-    else if (Array.isArray(resMep) && resMep[0]?.c) mep = parseFloat(resMep[0].c);
-    else if (resMep && resMep.price) mep = parseFloat(resMep.price);
-
-    if (!mep || mep <= 0) {
-      const dm = await fetch('https://dolarapi.com/v1/dolares/bolsa').then(r => r.json()).catch(() => null);
-      if (dm && dm.venta) mep = dm.venta;
-    }
-
-    const mapear = (arr) => {
-      if (!Array.isArray(arr)) return;
-      arr.forEach(item => {
-        const sym = (item.symbol || item.ticker || '').toUpperCase();
-        const precio = parseFloat(item.c || item.price || item.ultimo || 0);
-        if (sym && precio > 0) precios[sym] = precio;
-      });
-    };
-    mapear(resStocks); mapear(resCedears); mapear(resBonos);
-
-  } catch(e) {
-    document.getElementById('ultimo-update').textContent = 'Error: ' + e.message;
-    btn.disabled = false; btn.textContent = '↻ Actualizar precios'; return;
-  }
-
-  if (!mep || mep <= 0) {
-    document.getElementById('ultimo-update').textContent = 'No se pudo obtener el MEP.';
-    btn.disabled = false; btn.textContent = '↻ Actualizar precios'; return;
-  }
-
-  mepActual = mep;
-  let actualizados = 0, sinPrecio = [];
-
-  for (const activo of cartera) {
-    const precioARS = precios[activo.ticker.toUpperCase()];
-    if (precioARS && precioARS > 0) {
-      const precioUSD = precioARS / mep;
-      await supaPatch('cartera', activo.id, { precio_manual: precioUSD, updated_at: new Date().toISOString() });
-      activo.precio_manual = precioUSD;
-      actualizados++;
-    } else {
-      sinPrecio.push(activo.ticker);
-    }
-  }
-
-  const ahora = new Date().toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' });
-  let msg = `Actualizado: ${ahora} · MEP: $${mep.toFixed(0)} · ${actualizados} de ${cartera.length} activos`;
-  if (sinPrecio.length) msg += ` · Sin precio: ${sinPrecio.join(', ')} (cargalos a mano)`;
-  document.getElementById('ultimo-update').textContent = msg;
-
-  renderCartera();
-  btn.disabled = false; btn.textContent = '↻ Actualizar precios';
-  toast(`${actualizados} precios actualizados`);
+  await Promise.all([loadCartera(),loadCauciones()]);
 }
 
 // ── Cartera ───────────────────────────────────────────────────────────────────
-async function loadCartera() {
-  document.getElementById('tabla-cartera').innerHTML = '<tr><td colspan="8" class="empty">Cargando...</td></tr>';
-  [cartera, aforos] = await Promise.all([
-    supaGet('cartera', `comitente_id=eq.${currentComitente.id}&order=ticker.asc`),
+async function loadCartera(){
+  document.getElementById('tabla-cartera').innerHTML='<tr><td colspan="8" class="empty">Cargando...</td></tr>';
+  [cartera,aforos]=await Promise.all([
+    supaGet('cartera',`comitente_id=eq.${currentComitente.id}&order=ticker.asc`),
     supaGet('aforos')
   ]);
   renderCartera();
 }
 
-function renderCartera() {
-  const tbody = document.getElementById('tabla-cartera');
-  if (!Array.isArray(cartera) || !cartera.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty">Sin activos. Agregá el primero.</td></tr>';
-    ['stat-total','stat-garantia','stat-caucion'].forEach(id => document.getElementById(id).textContent = 'U$S 0');
-    return;
+function renderCartera(){
+  const tbody=document.getElementById('tabla-cartera');
+  if(!Array.isArray(cartera)||!cartera.length){
+    tbody.innerHTML='<tr><td colspan="8" class="empty">Sin activos.</td></tr>';
+    recalcStats(0);return;
   }
-  let totalValor = 0, totalGarantia = 0;
-  tbody.innerHTML = cartera.map(a => {
-    const p = a.precio_manual || 0;
-    const valor = p * a.cantidad;
-    const aforoPct = getAforo(a.ticker, a.tipo);
-    const garantia = valor * (aforoPct / 100);
-    totalValor += valor; totalGarantia += garantia;
-    return `<tr>
+  let totalGarantia=0;
+  tbody.innerHTML=cartera.map(a=>{
+    const p=a.precio_manual||0;
+    const valor=p*a.cantidad;
+    const aforoPct=getAforo(a.ticker,a.tipo);
+    const garantia=valor*(aforoPct/100);
+    totalGarantia+=garantia;
+    return`<tr>
       <td><strong>${a.ticker}</strong></td>
       <td><span class="badge badge-${a.tipo}">${a.tipo}</span></td>
       <td>${Number(a.cantidad).toLocaleString('es-AR')}</td>
@@ -521,80 +607,169 @@ function renderCartera() {
       <td><button class="btn btn-sm btn-danger" onclick="eliminarActivo('${a.id}')">×</button></td>
     </tr>`;
   }).join('');
-  document.getElementById('stat-total').textContent = fmtUSD(totalValor);
-  document.getElementById('stat-garantia').textContent = fmtUSD(totalGarantia);
-  document.getElementById('stat-caucion').textContent = fmtUSD(totalGarantia);
-  if (mepActual) document.getElementById('stat-mep').textContent = `TC MEP: $${mepActual.toFixed(0)}`;
+  recalcStats(totalGarantia);
+  if(mepActual)document.getElementById('stat-mep').textContent=`TC MEP: $${mepActual.toFixed(0)}`;
 }
 
-async function actualizarPrecio(id, precio) {
-  const val = parseFloat(precio);
-  await supaPatch('cartera', id, { precio_manual: val, updated_at: new Date().toISOString() });
-  cartera = cartera.map(a => a.id===id ? {...a, precio_manual: val} : a);
-  renderCartera(); toast('Precio actualizado');
+async function recalcStats(garantia){
+  const caus=await supaGet('cauciones',`comitente_id=eq.${currentComitente.id}&activa=eq.true`);
+  const tomado=Array.isArray(caus)?caus.reduce((s,c)=>s+parseFloat(c.monto_usd||0),0):0;
+  const neto=garantia-tomado;
+  document.getElementById('stat-garantia').textContent=fmtUSD(garantia);
+  document.getElementById('stat-tomado').textContent=fmtUSD(tomado);
+  document.getElementById('stat-neto').textContent=fmtUSD(neto);
+  document.getElementById('stat-neto').className='stat-value '+(neto>=0?'neto-positivo':'neto-negativo');
 }
 
-async function agregarActivo() {
-  const ticker = document.getElementById('na-ticker').value.trim().toUpperCase();
-  const tipo = document.getElementById('na-tipo').value;
-  const cantidad = parseFloat(document.getElementById('na-cantidad').value);
-  const err = document.getElementById('na-error');
-  if (!ticker || !cantidad) { err.textContent='Ticker y cantidad son obligatorios'; err.style.display='block'; return; }
+async function actualizarPrecio(id,precio){
+  const val=parseFloat(precio);
+  await supaPatch('cartera',id,{precio_manual:val,updated_at:new Date().toISOString()});
+  cartera=cartera.map(a=>a.id===id?{...a,precio_manual:val}:a);
+  renderCartera();toast('Precio actualizado');
+}
+
+async function agregarActivo(){
+  const ticker=document.getElementById('na-ticker').value.trim().toUpperCase();
+  const tipo=document.getElementById('na-tipo').value;
+  const cantidad=parseFloat(document.getElementById('na-cantidad').value);
+  const err=document.getElementById('na-error');
+  if(!ticker||!cantidad){err.textContent='Ticker y cantidad requeridos';err.style.display='block';return;}
   err.style.display='none';
-  await supaPost('cartera', { comitente_id: currentComitente.id, ticker, tipo, cantidad, precio_manual: 0 });
+  await supaPost('cartera',{comitente_id:currentComitente.id,ticker,tipo,cantidad,precio_manual:0});
   document.getElementById('na-ticker').value='';
   document.getElementById('na-cantidad').value='';
-  closeModal('nuevo-activo'); toast('Activo agregado'); await loadCartera();
+  closeModal('nuevo-activo');toast('Activo agregado');await loadCartera();
 }
 
-async function eliminarActivo(id) {
-  if (!confirm('¿Eliminar este activo?')) return;
-  await supaDelete('cartera', id); toast('Eliminado'); await loadCartera();
+async function eliminarActivo(id){
+  if(!confirm('¿Eliminar este activo?'))return;
+  await supaDelete('cartera',id);toast('Eliminado');await loadCartera();
+}
+
+// ── Cauciones ─────────────────────────────────────────────────────────────────
+async function loadCauciones(){
+  const caus=await supaGet('cauciones',`comitente_id=eq.${currentComitente.id}&activa=eq.true&order=fecha_vencimiento.asc`);
+  renderCauciones(caus);
+}
+
+function renderCauciones(list){
+  const tbody=document.getElementById('tabla-cauciones');
+  if(!Array.isArray(list)||!list.length){
+    tbody.innerHTML='<tr><td colspan="6" class="empty">Sin cauciones activas.</td></tr>';return;
+  }
+  tbody.innerHTML=list.map(c=>{
+    const d=diasHasta(c.fecha_vencimiento);
+    let estado='';
+    if(d<=0)estado='<span class="badge-vence-hoy">Vence hoy</span>';
+    else if(d<=3)estado=`<span class="badge-vence-pronto">Vence en ${d}d</span>`;
+    else estado=`<span style="font-size:12px;color:#888;">En ${d} días</span>`;
+    return`<tr>
+      <td><strong>${fmtUSD(c.monto_usd)}</strong></td>
+      <td>${fmtFecha(c.fecha_inicio)}</td>
+      <td>${c.dias}d</td>
+      <td>${fmtFecha(c.fecha_vencimiento)}</td>
+      <td>${estado}</td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-sm btn-warning" onclick="abrirRenovar('${c.id}',${c.monto_usd},'${c.fecha_vencimiento}','${currentComitente.nombre}')">Renovar</button>
+        <button class="btn btn-sm btn-danger" onclick="cerrarCaucion('${c.id}')">Cerrar</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// Nueva caución - preview vencimiento
+document.getElementById('cau-dias').addEventListener('input',()=>{
+  const fecha=document.getElementById('cau-fecha').value;
+  const dias=document.getElementById('cau-dias').value;
+  if(fecha&&dias)document.getElementById('cau-vencimiento').textContent='Vence: '+fmtFecha(addDias(fecha,dias));
+});
+document.getElementById('cau-fecha').addEventListener('input',()=>{
+  const fecha=document.getElementById('cau-fecha').value;
+  const dias=document.getElementById('cau-dias').value;
+  if(fecha&&dias)document.getElementById('cau-vencimiento').textContent='Vence: '+fmtFecha(addDias(fecha,dias));
+});
+
+async function crearCaucion(){
+  const monto=parseFloat(document.getElementById('cau-monto').value);
+  const fecha=document.getElementById('cau-fecha').value;
+  const dias=parseInt(document.getElementById('cau-dias').value);
+  const err=document.getElementById('cau-error');
+  if(!monto||!fecha||!dias){err.textContent='Completá todos los campos';err.style.display='block';return;}
+  err.style.display='none';
+  await supaPost('cauciones',{comitente_id:currentComitente.id,monto_usd:monto,fecha_inicio:fecha,dias,activa:true});
+  ['cau-monto','cau-fecha','cau-dias'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('cau-vencimiento').textContent='';
+  closeModal('nueva-caucion');toast('Caución registrada');
+  await Promise.all([loadCauciones(),loadCartera()]);
+}
+
+function abrirRenovar(id,monto,fechaVenc,nombre){
+  document.getElementById('ren-id').value=id;
+  document.getElementById('ren-monto').value=monto;
+  document.getElementById('ren-info').textContent=`${nombre} — ${fmtUSD(monto)} · Vence: ${fmtFecha(fechaVenc)}`;
+  document.getElementById('ren-dias').value='';
+  document.getElementById('ren-nueva-fecha').textContent='';
+  openModal('renovar-caucion');
+}
+
+document.getElementById('ren-dias').addEventListener('input',()=>{
+  const dias=document.getElementById('ren-dias').value;
+  if(dias){const nuevaFecha=addDias(hoy(),dias);document.getElementById('ren-nueva-fecha').textContent='Nueva fecha de vencimiento: '+fmtFecha(nuevaFecha);}
+});
+
+async function renovarCaucion(){
+  const id=document.getElementById('ren-id').value;
+  const monto=parseFloat(document.getElementById('ren-monto').value);
+  const dias=parseInt(document.getElementById('ren-dias').value);
+  if(!dias){toast('Ingresá el plazo');return;}
+  // Cerrar la vieja y crear la nueva
+  await supaPatch('cauciones',id,{activa:false});
+  await supaPost('cauciones',{comitente_id:currentComitente.id,monto_usd:monto,fecha_inicio:hoy(),dias,activa:true});
+  closeModal('renovar-caucion');toast('Caución renovada');
+  await Promise.all([loadCauciones(),loadCartera(),checkVencimientos()]);
+}
+
+async function cerrarCaucion(id){
+  if(!confirm('¿Cerrar esta caución? Esto la marcará como saldada.'))return;
+  await supaPatch('cauciones',id,{activa:false});
+  toast('Caución cerrada');
+  if(currentComitente)await Promise.all([loadCauciones(),loadCartera()]);
+  await Promise.all([loadComitentes(),checkVencimientos()]);
 }
 
 // ── Aforos ────────────────────────────────────────────────────────────────────
-async function loadAforos() {
-  aforosAll = await supaGet('aforos', 'order=tipo.asc,ticker.asc');
-  aforos = aforosAll; renderAforos(aforosAll);
+async function loadAforos(){
+  aforosAll=await supaGet('aforos','order=tipo.asc,ticker.asc');
+  aforos=aforosAll;renderAforos(aforosAll);
 }
-
-function filtrarAforos(q) {
-  renderAforos(!q ? aforosAll : aforosAll.filter(a => a.ticker.toLowerCase().includes(q.toLowerCase())));
-}
-
-function renderAforos(list) {
-  const tbody = document.getElementById('tabla-aforos');
-  if (!Array.isArray(list) || !list.length) { tbody.innerHTML='<tr><td colspan="4" class="empty">Sin aforos</td></tr>'; return; }
-  tbody.innerHTML = list.map(a => `<tr>
+function filtrarAforos(q){renderAforos(!q?aforosAll:aforosAll.filter(a=>a.ticker.toLowerCase().includes(q.toLowerCase())));}
+function renderAforos(list){
+  const tbody=document.getElementById('tabla-aforos');
+  if(!Array.isArray(list)||!list.length){tbody.innerHTML='<tr><td colspan="4" class="empty">Sin aforos</td></tr>';return;}
+  tbody.innerHTML=list.map(a=>`<tr>
     <td><strong>${a.ticker}</strong></td>
     <td><span class="badge badge-${a.tipo}">${a.tipo}</span></td>
     <td><input class="precio-input" type="number" value="${a.porcentaje}" onchange="actualizarAforo('${a.id}',this.value)" style="width:70px;"> %</td>
     <td><button class="btn btn-sm btn-danger" onclick="eliminarAforo('${a.id}')">×</button></td>
   </tr>`).join('');
 }
-
-async function crearAforo() {
-  const ticker = document.getElementById('af-ticker').value.trim().toUpperCase();
-  const tipo = document.getElementById('af-tipo').value;
-  const porcentaje = parseFloat(document.getElementById('af-porcentaje').value);
-  const err = document.getElementById('af-error');
-  if (!ticker || isNaN(porcentaje)) { err.textContent='Completá todos los campos'; err.style.display='block'; return; }
+async function crearAforo(){
+  const ticker=document.getElementById('af-ticker').value.trim().toUpperCase();
+  const tipo=document.getElementById('af-tipo').value;
+  const porcentaje=parseFloat(document.getElementById('af-porcentaje').value);
+  const err=document.getElementById('af-error');
+  if(!ticker||isNaN(porcentaje)){err.textContent='Completá todos los campos';err.style.display='block';return;}
   err.style.display='none';
-  const res = await supaPost('aforos', { ticker, tipo, porcentaje });
-  if (!Array.isArray(res) || res[0]?.code) { err.textContent='Error: ese ticker ya existe.'; err.style.display='block'; return; }
-  document.getElementById('af-ticker').value=''; document.getElementById('af-porcentaje').value='';
-  closeModal('nuevo-aforo'); toast('Aforo creado'); loadAforos();
+  const res=await supaPost('aforos',{ticker,tipo,porcentaje});
+  if(!Array.isArray(res)||res[0]?.code){err.textContent='Error: ese ticker ya existe.';err.style.display='block';return;}
+  document.getElementById('af-ticker').value='';document.getElementById('af-porcentaje').value='';
+  closeModal('nuevo-aforo');toast('Aforo creado');loadAforos();
 }
+async function actualizarAforo(id,pct){await supaPatch('aforos',id,{porcentaje:parseFloat(pct),updated_at:new Date().toISOString()});toast('Aforo actualizado');}
+async function eliminarAforo(id){if(!confirm('¿Eliminar?'))return;await supaDelete('aforos',id);toast('Eliminado');loadAforos();}
 
-async function actualizarAforo(id, pct) {
-  await supaPatch('aforos', id, { porcentaje: parseFloat(pct), updated_at: new Date().toISOString() });
-  toast('Aforo actualizado');
-}
-
-async function eliminarAforo(id) {
-  if (!confirm('¿Eliminar este aforo?')) return;
-  await supaDelete('aforos', id); toast('Eliminado'); loadAforos();
-}
+// Setear fecha de hoy por defecto en modal caución
+document.getElementById('cau-fecha').value=hoy();
 
 loadComitentes();
 </script>
