@@ -426,11 +426,12 @@ async function actualizarPrecios(){
 
   let mep=null, preciosARS={};
   try{
-    const[rMep,rStocks,rCedears,rBonos]=await Promise.all([
+    const[rMep,rStocks,rCedears,rBonos,rCorp]=await Promise.all([
       fetch('https://data912.com/live/mep').then(r=>r.json()),
       fetch('https://data912.com/live/arg_stocks').then(r=>r.json()),
-      fetch('https://data912.com/live/cedears').then(r=>r.json()).catch(()=>[]),
-      fetch('https://data912.com/live/bonds').then(r=>r.json()).catch(()=>[])
+      fetch('https://data912.com/live/arg_cedears').then(r=>r.json()).catch(()=>[]),
+      fetch('https://data912.com/live/arg_bonds').then(r=>r.json()).catch(()=>[]),
+      fetch('https://data912.com/live/arg_corp').then(r=>r.json()).catch(()=>[])
     ]);
     if(rMep&&rMep.c)mep=parseFloat(rMep.c);
     else if(Array.isArray(rMep)&&rMep[0]?.c)mep=parseFloat(rMep[0].c);
@@ -439,7 +440,7 @@ async function actualizarPrecios(){
       if(dm&&dm.venta)mep=dm.venta;
     }
     const map=arr=>{if(!Array.isArray(arr))return;arr.forEach(i=>{const s=(i.symbol||i.ticker||'').toUpperCase();const p=parseFloat(i.c||i.price||i.ultimo||0);if(s&&p>0)preciosARS[s]=p;});};
-    map(rStocks);map(rCedears);map(rBonos);
+    map(rStocks);map(rCedears);map(rBonos);map(rCorp);
   }catch(e){
     document.getElementById('update-status').textContent='Error: '+e.message;
     btn.disabled=false;btn.textContent='↻ Actualizar desde API';return;
