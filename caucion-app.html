@@ -590,7 +590,7 @@ async function loadComitentes(){
     const garantia=cart.reduce((s,a)=>{
       const p=getPrecio(a.ticker);
       const pUSD=p?parseFloat(p.precio_usd||0):parseFloat(a.precio_manual||0);
-      return s+pUSD*a.cantidad*(getAforo(a.ticker,a.tipo)/100);
+      const f=(a.tipo==="bono"||a.tipo==="on")?0.01:1;return s+pUSD*a.cantidad*f*(getAforo(a.ticker,a.tipo)/100);
     },0);
     const tomado=caus.reduce((s,c)=>s+parseFloat(c.monto_usd||0),0);
     return{c,garantia,tomado,neto:garantia-tomado,proxVenc:caus.length?caus[0].fecha_vencimiento:null};
@@ -709,7 +709,8 @@ function renderCartera(){
     const pr=getPrecio(a.ticker);
     const pARS=pr?parseFloat(pr.precio_ars||0):0;
     const pUSD=pr?parseFloat(pr.precio_usd||0):parseFloat(a.precio_manual||0);
-    const valor=pUSD*a.cantidad;
+    const factor=(a.tipo==="bono"||a.tipo==="on")?0.01:1;
+    const valor=pUSD*a.cantidad*factor;
     const aforoPct=getAforo(a.ticker,a.tipo);
     const garantia=valor*(aforoPct/100);
     totalG+=garantia;
